@@ -1,8 +1,8 @@
-package com.product.product_service.Service;
+package com.product.product_service.Services;
 
 import com.product.product_service.DTOs.ProductRequest;
 import com.product.product_service.DTOs.ProductResponse;
-import com.product.product_service.Entities.Product;
+import com.product.product_service.DTOs.ProductWithInventory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,4 +16,6 @@ public interface ProductService {
 
      ProductResponse fetchById(Long id);
      void delete(Long id);
+
+     ProductWithInventory getProductWithInventory(Long productId);
 }

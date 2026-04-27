@@ -1,9 +1,10 @@
 package com.product.product_service.DTOs;
 
 public record ProductResponse(
-        Long productId,
-        String productName,
+        Long id,
+        String name,
         String description,
-        Long price
+        Double price,
+        Double discount
 ) {
 }

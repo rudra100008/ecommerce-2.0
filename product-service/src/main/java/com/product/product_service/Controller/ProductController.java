@@ -2,7 +2,8 @@ package com.product.product_service.Controller;
 
 import com.product.product_service.DTOs.ProductRequest;
 import com.product.product_service.DTOs.ProductResponse;
-import com.product.product_service.Service.ProductService;
+import com.product.product_service.DTOs.ProductWithInventory;
+import com.product.product_service.Services.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,6 +43,13 @@ public class ProductController {
     ){
         this.productService.delete(id);
         return "Product Deleted successfully";
+    }
+
+    @GetMapping("/{productId}/inventory")
+    public ProductWithInventory fetchProductWithInventory(
+            @PathVariable Long productId
+    ){
+        return this.productService.getProductWithInventory(productId);
     }
 
 

@@ -3,6 +3,7 @@ package com.inventory_service.Controllers;
 
 import com.inventory_service.DTOs.InventoryRequest;
 import com.inventory_service.DTOs.InventoryResponse;
+import com.inventory_service.DTOs.InventoryWithProduct;
 import com.inventory_service.Services.InventoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +16,7 @@ import java.util.List;
 public class InventoryController {
     private final InventoryService inventoryService;
 
-    @PostMapping("")
+    @PostMapping()
     public InventoryResponse create(
             @RequestBody InventoryRequest request
     ){
@@ -55,5 +56,18 @@ public class InventoryController {
     ){
         this.inventoryService.deleteByProductId(productId);
         return "Inventory deleted Successfully";
+    }
+
+
+    @GetMapping("/inventory_product/{id}")
+    public InventoryWithProduct fetchInventoryWithProduct(
+            @PathVariable Long id
+    ){
+        return this.inventoryService.getInventoryDetails(id);
+    }
+
+    @GetMapping("/inventories_products")
+    public List<InventoryWithProduct> fetchInventoriesWithProducts(){
+        return  this.inventoryService.getAll();
     }
 }

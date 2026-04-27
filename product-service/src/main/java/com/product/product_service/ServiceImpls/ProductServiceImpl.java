@@ -1,10 +1,15 @@
 package com.product.product_service.ServiceImpls;
 
+import com.product.product_service.DTOs.InventoryDTO;
 import com.product.product_service.DTOs.ProductRequest;
 import com.product.product_service.DTOs.ProductResponse;
+import com.product.product_service.DTOs.ProductWithInventory;
 import com.product.product_service.Entities.Product;
+import com.product.product_service.Exceptions.ResourceNotFoundException;
+import com.product.product_service.Mappers.ProductMapper;
 import com.product.product_service.Repository.ProductRepository;
-import com.product.product_service.Service.ProductService;
+import com.product.product_service.Services.InventoryClient;
+import com.product.product_service.Services.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,17 +19,18 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
-
+    private final InventoryClient inventoryClient;
+    private final ProductMapper productMapper;
 
     @Override
     public ProductResponse add(ProductRequest request) {
-        Product product = toProduct(request);
+        Product product = this.productMapper.toProduct(request);
         if(product == null){
             throw new IllegalArgumentException("Product is null");
         }
         Product savedProduct = this.productRepository.save(product);
 
-        return toResponse(savedProduct);
+        return this.productMapper.toProductResponse(savedProduct);
     }
 
     @Override
@@ -32,7 +38,7 @@ public class ProductServiceImpl implements ProductService {
         List<Product> products = this.productRepository.findAll();
 
         return  products.stream()
-                .map(this::toResponse)
+                .map(this.productMapper::toProductResponse)
                 .toList();
 
     }
@@ -43,7 +49,7 @@ public class ProductServiceImpl implements ProductService {
                 ()-> new RuntimeException("Product Id not found")
         );
 
-        return this.toResponse(product);
+        return this.productMapper.toProductResponse(product);
     }
 
     @Override
@@ -53,19 +59,15 @@ public class ProductServiceImpl implements ProductService {
         this.productRepository.delete(product);
     }
 
-    private Product toProduct(ProductRequest request){
-        return Product.builder()
-                .name(request.productName())
-                .description(request.description())
-                .price(request.price())
-                .build();
+    @Override
+    public ProductWithInventory getProductWithInventory(Long productId) {
+        Product product = this.productRepository.findById(productId)
+                .orElseThrow(()-> new ResourceNotFoundException("Product not found"));
+        InventoryDTO inventory = this.inventoryClient.fetchInventoryByProductId(product.getId());
+
+        ProductResponse productResponse = this.productMapper.toProductResponse(product);
+        return this.productMapper.toProductWithInventory(productResponse,inventory);
+
     }
-    private ProductResponse toResponse(Product product){
-        return new ProductResponse(
-                product.getId(),
-                product.getName(),
-                product.getDescription(),
-                product.getPrice()
-        );
-    }
+
 }

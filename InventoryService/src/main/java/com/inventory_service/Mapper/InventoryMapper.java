@@ -3,12 +3,16 @@ package com.inventory_service.Mapper;
 
 import com.inventory_service.DTOs.InventoryRequest;
 import com.inventory_service.DTOs.InventoryResponse;
+import com.inventory_service.DTOs.InventoryWithProduct;
+import com.inventory_service.DTOs.ProductDTO;
 import com.inventory_service.Entities.Inventory;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public interface InventoryMapper {
@@ -27,5 +31,23 @@ public interface InventoryMapper {
         return inventories.stream()
                 .map(this::toInventoryResponse)
                 .toList();
+    }
+
+    @Mapping(source = "inventory.id",target = "inventoryId")
+    @Mapping(source = "inventory.stockQuantity", target = "stockQuantity")
+    @Mapping(source = "productDTO",target = "productDTO")
+    InventoryWithProduct toInventoryWithProduct( Inventory inventory, ProductDTO productDTO);
+
+
+    default List<InventoryWithProduct> toInventoriesWithProducts(List<Inventory> inventories,List<ProductDTO> productDTOS){
+        if(inventories == null && productDTOS == null){
+            return  new ArrayList<>();
+        }
+        Map<Long,ProductDTO> productDTOMap = productDTOS.stream()
+                .collect(Collectors.toMap(p-> p.getId(),p->p));
+
+        return inventories != null ? inventories.stream()
+                .map(inv -> toInventoryWithProduct(inv, productDTOMap.get(inv.getProductId())))
+                .toList() : null;
     }
 }

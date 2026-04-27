@@ -1,8 +1,9 @@
 package com.product.product_service.DTOs;
 
 public record ProductRequest(
-        String productName,
+        String name,
         String description,
-        Long price
+        Double price,
+        Double discount
 ) {
 }

@@ -4,11 +4,14 @@ package com.inventory_service.ServiceImpls;
 
 import com.inventory_service.DTOs.InventoryRequest;
 import com.inventory_service.DTOs.InventoryResponse;
+import com.inventory_service.DTOs.InventoryWithProduct;
+import com.inventory_service.DTOs.ProductDTO;
 import com.inventory_service.Entities.Inventory;
 import com.inventory_service.Exceptions.ResourceNotFoundException;
 import com.inventory_service.Mapper.InventoryMapper;
 import com.inventory_service.Repository.InventoryRepository;
 import com.inventory_service.Services.InventoryService;
+import com.inventory_service.Services.ProductClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +22,8 @@ import java.util.List;
 public class InventoryServiceImpl implements InventoryService {
     private final InventoryRepository inventoryRepository;
     private final InventoryMapper inventoryMapper;
+    private final ProductClient productClient;
+
 
     @Override
     public InventoryResponse create(InventoryRequest request) {
@@ -60,5 +65,21 @@ public class InventoryServiceImpl implements InventoryService {
         Inventory inventory = this.inventoryRepository.findByProductId(productId)
                 .orElseThrow(()-> new ResourceNotFoundException("Inventory not found by productId"));
         this.inventoryRepository.delete(inventory);
+    }
+
+    @Override
+    public InventoryWithProduct getInventoryDetails(Long inventoryId) {
+        Inventory inventory = this.inventoryRepository.findById(inventoryId)
+                .orElseThrow(()-> new ResourceNotFoundException("Inventory not found"));
+        ProductDTO productDTO = productClient.getProductById(inventory.getProductId());
+        return this.inventoryMapper.toInventoryWithProduct(inventory,productDTO);
+    }
+
+    @Override
+    public List<InventoryWithProduct> getAll() {
+        List<Inventory> inventories =  this.inventoryRepository.findAll();
+        List<ProductDTO> productDTO = productClient.getAllProducts();
+
+        return this.inventoryMapper.toInventoriesWithProducts(inventories,productDTO);
     }
 }
