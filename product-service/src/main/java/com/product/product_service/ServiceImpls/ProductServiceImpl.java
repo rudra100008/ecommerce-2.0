@@ -1,9 +1,9 @@
 package com.product.product_service.ServiceImpls;
 
-import com.product.product_service.DTOs.InventoryDTO;
-import com.product.product_service.DTOs.ProductRequest;
-import com.product.product_service.DTOs.ProductResponse;
-import com.product.product_service.DTOs.ProductWithInventory;
+import com.product.product_service.DTOs.Inventory.InventoryDTO;
+import com.product.product_service.DTOs.Product.ProductRequest;
+import com.product.product_service.DTOs.Product.ProductResponse;
+import com.product.product_service.DTOs.Product.ProductWithInventory;
 import com.product.product_service.Entities.Product;
 import com.product.product_service.Exceptions.ResourceNotFoundException;
 import com.product.product_service.Mappers.ProductMapper;

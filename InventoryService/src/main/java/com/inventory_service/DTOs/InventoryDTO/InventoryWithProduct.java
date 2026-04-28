@@ -1,6 +1,7 @@
-package com.inventory_service.DTOs;
+package com.inventory_service.DTOs.InventoryDTO;
 
 
+import com.inventory_service.DTOs.ProductDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -1,8 +1,8 @@
 package com.product.product_service.Services;
 
-import com.product.product_service.DTOs.ProductRequest;
-import com.product.product_service.DTOs.ProductResponse;
-import com.product.product_service.DTOs.ProductWithInventory;
+import com.product.product_service.DTOs.Product.ProductRequest;
+import com.product.product_service.DTOs.Product.ProductResponse;
+import com.product.product_service.DTOs.Product.ProductWithInventory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

@@ -11,11 +11,14 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Setter
 @Getter
-@Table(name = "reservations",uniqueConstraints = @UniqueConstraint(columnNames = {"inventory_id","status"}))
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {
+        "inventory_id", "user_id", "status"
+}))
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString(exclude = {
         "inventory"
 })
+@Builder
 public class Reservation {
 
     @Id
@@ -28,7 +31,10 @@ public class Reservation {
     private Inventory inventory;
 
     @Column(nullable = false)
-    private Long reservedQuantity;
+    private Long userId;
+
+    @Column(nullable = false)
+    private long reservedQuantity;
 
     @Column(nullable = false)
     private LocalDateTime reservedAt;

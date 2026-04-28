@@ -1,9 +1,9 @@
 package com.inventory_service.Controllers;
 
 
-import com.inventory_service.DTOs.InventoryRequest;
-import com.inventory_service.DTOs.InventoryResponse;
-import com.inventory_service.DTOs.InventoryWithProduct;
+import com.inventory_service.DTOs.InventoryDTO.InventoryRequest;
+import com.inventory_service.DTOs.InventoryDTO.InventoryResponse;
+import com.inventory_service.DTOs.InventoryDTO.InventoryWithProduct;
 import com.inventory_service.Services.InventoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;

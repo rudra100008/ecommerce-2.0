@@ -72,7 +72,10 @@ public class GlobalException {
         return errorResponse(HttpStatus.BAD_REQUEST, e.getMessage(), request);
     }
 
-
+    @ExceptionHandler(ReservationInvalidException.class)
+    public ResponseEntity<?> handleReservationInvalidException(ReservationInvalidException e,WebRequest request){
+        return errorResponse(HttpStatus.CONFLICT,e.getMessage(),request);
+    }
 
     // GlobalExceptionHandler
     @ExceptionHandler(DataIntegrityViolationException.class)

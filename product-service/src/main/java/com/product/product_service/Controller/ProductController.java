@@ -1,8 +1,8 @@
 package com.product.product_service.Controller;
 
-import com.product.product_service.DTOs.ProductRequest;
-import com.product.product_service.DTOs.ProductResponse;
-import com.product.product_service.DTOs.ProductWithInventory;
+import com.product.product_service.DTOs.Product.ProductRequest;
+import com.product.product_service.DTOs.Product.ProductResponse;
+import com.product.product_service.DTOs.Product.ProductWithInventory;
 import com.product.product_service.Services.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;

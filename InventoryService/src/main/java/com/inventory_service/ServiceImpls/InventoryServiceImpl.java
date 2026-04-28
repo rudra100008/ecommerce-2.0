@@ -2,9 +2,9 @@ package com.inventory_service.ServiceImpls;
 
 
 
-import com.inventory_service.DTOs.InventoryRequest;
-import com.inventory_service.DTOs.InventoryResponse;
-import com.inventory_service.DTOs.InventoryWithProduct;
+import com.inventory_service.DTOs.InventoryDTO.InventoryRequest;
+import com.inventory_service.DTOs.InventoryDTO.InventoryResponse;
+import com.inventory_service.DTOs.InventoryDTO.InventoryWithProduct;
 import com.inventory_service.DTOs.ProductDTO;
 import com.inventory_service.Entities.Inventory;
 import com.inventory_service.Exceptions.ResourceNotFoundException;
@@ -14,7 +14,9 @@ import com.inventory_service.Services.InventoryService;
 import com.inventory_service.Services.ProductClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -81,5 +83,25 @@ public class InventoryServiceImpl implements InventoryService {
         List<ProductDTO> productDTO = productClient.getAllProducts();
 
         return this.inventoryMapper.toInventoriesWithProducts(inventories,productDTO);
+    }
+
+    @Override
+    public long getAvailableStockQuantity(Long inventoryId) {
+        Long result = inventoryRepository.getAvailableQuantity(inventoryId, LocalDateTime.now());
+        return result != null ? result : 0L;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Inventory findById(Long id) {
+        return this.inventoryRepository.findById(id)
+                .orElseThrow(()-> new ResourceNotFoundException("Inventory not found."));
+    }
+
+    @Override
+    @Transactional
+    public Inventory findByIdWithLock(Long id) {
+        return this.inventoryRepository.findByIdWithLock(id)
+                .orElseThrow(()-> new ResourceNotFoundException("Inventory not found."));
     }
 }
