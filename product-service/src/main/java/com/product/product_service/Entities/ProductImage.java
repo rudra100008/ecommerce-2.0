@@ -16,9 +16,12 @@ public class ProductImage {
     @EqualsAndHashCode.Include
     private Long id;
 
+    @Column(nullable = false)
     private String imageUrl;
+    @Column(nullable = false)
     private String publicId;
 
+    private String folder;
 
     @Column(nullable = false)
     private boolean primaryImage;

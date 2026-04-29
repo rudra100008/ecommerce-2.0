@@ -7,6 +7,7 @@ public record ProductImageDTO(
         String imageUrl,
         String publicId,
         boolean primaryImage,
+        String folder,
         List<Long> productIds
 ) {
 }
