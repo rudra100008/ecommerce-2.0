@@ -7,24 +7,26 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface ProductImageMapper {
-    @Mapping(target = "products",ignore = true)
+    @Mapping(target = "product",ignore = true)
+    @Mapping(target = "folder",ignore = true)
+    @Mapping(target = "publicId",ignore = true)
     ProductImage toProductImage(ProductImageDTO dto);
 
-    @Mapping(source = "product",target ="productIds", qualifiedByName = "mapProductsToIds")
+    @Mapping(target = "imageUrl", source = "imageUrl")
     ProductImageDTO toProductImageDTO(ProductImage productImage);
 
 
-    @Named("mapProductsToIds")
-    default List<Long> mapProductsToIds(List<Product> products){
-        if (products == null){
-            return List.of();
+    default List<ProductImageDTO> toProductImageDTOs(List<ProductImage> productImages){
+        if(productImages == null){
+            return new ArrayList<>();
         }
-        return products.stream()
-                .map(Product::getId)
+        return productImages.stream()
+                .map(this::toProductImageDTO)
                 .toList();
     }
 }

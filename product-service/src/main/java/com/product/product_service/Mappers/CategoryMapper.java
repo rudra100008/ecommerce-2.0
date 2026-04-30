@@ -17,7 +17,6 @@ public interface CategoryMapper {
 
 
     @Mapping(source = "id",target = "categoryId")
-    @Mapping(source = "products",target = "productIds", qualifiedByName = "mapProductToProductIds")
     CategoryDTO toCategoryDTO(Category category);
 
     @Named("mapProductToProductIds")

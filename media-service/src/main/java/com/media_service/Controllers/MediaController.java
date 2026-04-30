@@ -41,7 +41,7 @@ public class MediaController {
     }
 
     @DeleteMapping("/delete")
-    public ResponseEntity<Void> delete(
+    public ResponseEntity<?> delete(
             @Valid @RequestBody MediaDeleteRequest request) {
 
         mediaService.deleteImage(request.publicId());

@@ -1,11 +1,17 @@
 package com.product.product_service.Controller;
 
+import com.product.product_service.DTOs.Category.CategoryRequest;
 import com.product.product_service.DTOs.Product.ProductRequest;
 import com.product.product_service.DTOs.Product.ProductResponse;
-import com.product.product_service.DTOs.Product.ProductWithInventory;
+import com.product.product_service.DTOs.Product.ProductDTO;
 import com.product.product_service.Services.ProductService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -15,12 +21,16 @@ import java.util.List;
 public class ProductController {
     private final ProductService productService;
 
-    @PostMapping()
-    public ProductResponse create(
-            @RequestBody ProductRequest productRequest
+    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE,MediaType.APPLICATION_JSON_VALUE})
+
+    public ResponseEntity<ProductDTO> create(
+            @Valid @RequestPart("product") ProductRequest productRequest,
+            @Valid @RequestPart("category") CategoryRequest categoryRequest,
+            @RequestPart("images") List<MultipartFile> imageFiles
     )
     {
-        return  this.productService.add(productRequest);
+        ProductDTO productDTO = this.productService.create(productRequest,imageFiles,categoryRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(productDTO);
     }
 
     @GetMapping()
@@ -46,7 +56,7 @@ public class ProductController {
     }
 
     @GetMapping("/{productId}/inventory")
-    public ProductWithInventory fetchProductWithInventory(
+    public ProductDTO fetchProductWithInventory(
             @PathVariable Long productId
     ){
         return this.productService.getProductWithInventory(productId);

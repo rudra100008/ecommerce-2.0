@@ -14,6 +14,16 @@ spring:
               predicates:
                 - Path=/api/product/**
 
+            - id: product-service-category
+              uri: lb://product-service
+              predicates:
+                  - Path=/api/category/**
+
+            - id: media-service
+              uri: lb://media-service
+              predicates:
+                - Path=/api/media/**
+
             - id: inventory-service
               uri: lb://inventory-service
               predicates:
@@ -28,6 +38,7 @@ spring:
               uri: lb://order-service
               predicates:
                 - Path=/api/order/**
+
 
 eureka:
   client:

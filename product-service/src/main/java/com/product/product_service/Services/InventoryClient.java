@@ -4,10 +4,7 @@ import com.product.product_service.Constants.ApiConstants;
 import com.product.product_service.DTOs.Inventory.InventoryDTO;
 import com.product.product_service.DTOs.Inventory.InventoryRequest;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 @FeignClient(name = "inventory-service")
 public interface InventoryClient {
@@ -18,4 +15,7 @@ public interface InventoryClient {
 
     @GetMapping(ApiConstants.API_INVENTORY_BY_PRODUCT)
     InventoryDTO fetchInventoryByProductId(@PathVariable Long productId);
+
+    @DeleteMapping(ApiConstants.API_INVENTORY + "/product/{productId}")
+    void deleteByProductId(@PathVariable Long productId);
 }
