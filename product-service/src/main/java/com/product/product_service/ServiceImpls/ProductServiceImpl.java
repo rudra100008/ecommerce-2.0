@@ -121,8 +121,14 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public List<ProductDTO> fetchAllProductsDetail() {
+        List<Product> products =
+        return List.of();
+    }
+
+    @Override
     @Transactional
-    public ProductDTO getProductWithInventory(Long productId) {
+    public ProductDTO getProductDetails(Long productId) {
         Product product = this.productRepository.findByIdWithCategoryAndImages(productId)
                 .orElseThrow(()-> new ResourceNotFoundException("Product not found"));
 

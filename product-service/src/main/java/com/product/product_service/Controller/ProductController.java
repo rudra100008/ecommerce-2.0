@@ -55,11 +55,19 @@ public class ProductController {
         return "Product Deleted successfully";
     }
 
-    @GetMapping("/{productId}/inventory")
+    @GetMapping("/{productId}/details")
     public ProductDTO fetchProductWithInventory(
             @PathVariable Long productId
     ){
-        return this.productService.getProductWithInventory(productId);
+        return this.productService.getProductDetails(productId);
+    }
+
+    @GetMapping("/fetchAll/details")
+    public ResponseEntity<?> fetchAllProducts(
+
+    ){
+        List<ProductDTO> productDTOS = this.productService.fetchAllProductsDetail();
+        return ResponseEntity.status(HttpStatus.OK).body(productDTOS);
     }
 
 

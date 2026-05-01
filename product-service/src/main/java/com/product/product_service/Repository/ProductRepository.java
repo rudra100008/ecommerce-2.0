@@ -20,4 +20,7 @@ public interface ProductRepository  extends JpaRepository<Product,Long> {
 
     @Query("SELECT p FROM Product p JOIN FETCH p.category LEFT JOIN FETCH p.images WHERE p.id = :id")
     Optional<Product> findByIdWithCategoryAndImages(@Param("id")Long id);
+
+    @Query("SELECT p FROM P")
+    List<Product> findAllDetailed();
 }

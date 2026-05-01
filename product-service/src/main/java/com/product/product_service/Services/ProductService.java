@@ -19,5 +19,7 @@ public interface ProductService {
      ProductResponse fetchById(Long id);
      void delete(Long id);
 
-     ProductDTO getProductWithInventory(Long productId);
+     ProductDTO getProductDetails(Long productId);
+
+     List<ProductDTO> fetchAllProductsDetail();
 }
