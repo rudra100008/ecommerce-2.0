@@ -1,9 +1,12 @@
 package com.product.product_service.Controller;
 
+import com.product.product_service.Constants.PageConstant;
 import com.product.product_service.DTOs.Category.CategoryRequest;
+import com.product.product_service.DTOs.PageInfo;
 import com.product.product_service.DTOs.Product.ProductRequest;
 import com.product.product_service.DTOs.Product.ProductResponse;
 import com.product.product_service.DTOs.Product.ProductDTO;
+import com.product.product_service.DTOs.Product.ProductWithImageAndCategory;
 import com.product.product_service.Services.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,30 +24,43 @@ import java.util.List;
 public class ProductController {
     private final ProductService productService;
 
-    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE,MediaType.APPLICATION_JSON_VALUE})
-
+    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<ProductDTO> create(
             @Valid @RequestPart("product") ProductRequest productRequest,
-            @Valid @RequestPart("category") CategoryRequest categoryRequest,
-            @RequestPart("images") List<MultipartFile> imageFiles
+            @Valid @RequestPart("category") CategoryRequest categoryRequest
     )
     {
-        ProductDTO productDTO = this.productService.create(productRequest,imageFiles,categoryRequest);
+        ProductDTO productDTO = this.productService.create(productRequest,categoryRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(productDTO);
     }
 
-    @GetMapping()
-    public List<ProductResponse> fetchAll()
+
+    // this fetch product with a primary image and categoryD
+    @GetMapping("/fetchAll")
+    public ResponseEntity<?> fetchAll(
+            @RequestParam(required = false, defaultValue = PageConstant.PAGE_NUMBER)Integer pageNumber,
+            @RequestParam(required = false,defaultValue = PageConstant.PAGE_SIZE)Integer pageSize,
+            @RequestParam(required = false,defaultValue = PageConstant.SORT_BY) String sortBy,
+            @RequestParam(required = false,defaultValue = PageConstant.SORT_DIR)String sortDir
+    )
     {
-        return  this.productService.fetchAll();
+
+        PageInfo<ProductWithImageAndCategory> products = this.productService.fetchAll(
+                pageNumber,
+                pageSize,
+                sortBy,
+                sortDir
+        );
+        return  ResponseEntity.status(HttpStatus.OK).body(products);
     }
 
 
     @GetMapping("/{id}")
-    public ProductResponse fetchById(
+    public ResponseEntity<ProductResponse> fetchById(
             @PathVariable("id")Long id
     ){
-        return  this.productService.fetchById(id);
+        ProductResponse productResponse =  this.productService.findById(id);
+        return ResponseEntity.status(HttpStatus.OK).body(productResponse);
     }
 
     @DeleteMapping("/{id}")
@@ -55,20 +71,15 @@ public class ProductController {
         return "Product Deleted successfully";
     }
 
+    // this endpoints give product in details(inventory,images and category)
     @GetMapping("/{productId}/details")
-    public ProductDTO fetchProductWithInventory(
+    public ProductDTO fetchProductDetails(
             @PathVariable Long productId
     ){
         return this.productService.getProductDetails(productId);
     }
 
-    @GetMapping("/fetchAll/details")
-    public ResponseEntity<?> fetchAllProducts(
 
-    ){
-        List<ProductDTO> productDTOS = this.productService.fetchAllProductsDetail();
-        return ResponseEntity.status(HttpStatus.OK).body(productDTOS);
-    }
 
 
 

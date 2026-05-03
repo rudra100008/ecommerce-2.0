@@ -1,20 +1,19 @@
 package com.product.product_service.ServiceImpls;
 
+import com.product.product_service.Constants.PageConstant;
 import com.product.product_service.DTOs.Category.CategoryDTO;
 import com.product.product_service.DTOs.Category.CategoryRequest;
 import com.product.product_service.DTOs.Inventory.InventoryDTO;
 import com.product.product_service.DTOs.Inventory.InventoryRequest;
 import com.product.product_service.DTOs.Media.MediaDeleteRequest;
 import com.product.product_service.DTOs.Media.MediaUploadResponse;
-import com.product.product_service.DTOs.Product.ProductRequest;
-import com.product.product_service.DTOs.Product.ProductResponse;
-import com.product.product_service.DTOs.Product.ProductDTO;
+import com.product.product_service.DTOs.PageInfo;
+import com.product.product_service.DTOs.Product.*;
 import com.product.product_service.DTOs.ProductImage.ProductImageDTO;
 import com.product.product_service.Entities.Category;
 import com.product.product_service.Entities.Product;
 import com.product.product_service.Entities.ProductImage;
 import com.product.product_service.Exceptions.BusinessInvalidException;
-import com.product.product_service.Exceptions.ImageInvalidException;
 import com.product.product_service.Exceptions.ResourceNotFoundException;
 import com.product.product_service.Helper.ProductHelper;
 import com.product.product_service.Mappers.ProductImageMapper;
@@ -24,11 +23,17 @@ import com.product.product_service.Repository.ProductRepository;
 import com.product.product_service.Services.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -39,66 +44,125 @@ public class ProductServiceImpl implements ProductService {
     private final MediaClient mediaClient;
     private final ProductMapper productMapper;
     private final ProductHelper productHelper;
-    private final ProductValidator productValidator;
     private final CategoryService categoryService;
     private final ProductImageMapper productImageMapper;
+    private final ProductImageService productImageService;
 
 
+    private static final List<String> ALLOWED_SORT_FIELDS = List.of("createdAt", "updatedAt", "productName", "price");
 
 
     @Override
     @Transactional
-    public ProductDTO create(ProductRequest request, List<MultipartFile> imageFiles, CategoryRequest categoryRequest) {
-        productValidator.validateProduct(request);
-        Category category = this.categoryService.findOrCreate(categoryRequest);
+    public ProductDTO create(ProductRequest request,CategoryRequest categoryRequest) {
+        List<String> uploadedPublicIds = new ArrayList<>();
 
-        Product product = productHelper.buildProduct(request,category.getName());
+        try {
+            Category category = categoryService.findOrCreate(categoryRequest);
+            Product product = productHelper.buildProduct(request, category.getName());
+            category.addProduct(product);
 
-        category.addProduct(product);
+            if (request.images() != null && !request.images().isEmpty()) {
+                request.images().forEach(img -> {
+                    uploadedPublicIds.add(img.publicId());
+                    ProductImage productImage = ProductImage.builder()
+                            .imageUrl(img.imageUrl())
+                            .publicId(img.publicId())
+                            .primaryImage(img.primaryImage())
+                            .folder("products")
+                            .build();
+                    product.addImage(productImage);
+                });
+            }
 
-        if(imageFiles != null && !imageFiles.isEmpty()){
-            List<MediaUploadResponse> uploadedImages = uploadImages(imageFiles);
+            Product saved = productRepository.save(product);
+            InventoryDTO inventoryDTO = createInventory(saved.getId(), request.stockQuantity());
+            CategoryDTO categoryDTO = new CategoryDTO(category.getId(), category.getName());
+            List<ProductImageDTO> images = productImageMapper.toProductImageDTOs(saved.getImages());
 
-            uploadedImages.forEach(uploaded ->{
-                ProductImage productImage = ProductImage.builder()
-                        .imageUrl(uploaded.imageUrl())
-                        .publicId(uploaded.publicId())
-                        .folder("products")
-                        .primaryImage(false)
-                        .build();
-                product.addImage(productImage);
-            });
-            log.info("Attached {} images to product", uploadedImages.size());
+            return productMapper.toProductDTO(saved, inventoryDTO, images, categoryDTO);
+
+        } catch (Exception e) {
+            // Rollback Cloudinary uploads
+            if (!uploadedPublicIds.isEmpty()) {
+                uploadedPublicIds.forEach(publicId ->
+                        mediaClient.deleteImage(new MediaDeleteRequest(publicId))
+                );
+                log.warn("Rolled back {} images from Cloudinary", uploadedPublicIds.size());
+            }
+            throw e;
         }
-        Product savedProduct = this.productRepository.save(product);
-        log.info("Product saved with id: {}", savedProduct.getId());
+    }
+
+    @Override
+    @Transactional
+    public PageInfo<ProductWithImageAndCategory> fetchAll(Integer pageNumber, Integer pageSize, String sortBy, String sortDir) {
+        String validateSortBy = ALLOWED_SORT_FIELDS.contains(sortBy) ? sortBy : PageConstant.SORT_BY;
+        Sort sort = sortDir.equalsIgnoreCase(PageConstant.SORT_DIR) ?  Sort.by(validateSortBy).descending()
+                : Sort.by(validateSortBy).ascending();
+
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
+
+        Page<Product> productPage = this.productRepository.findAllWithCategory(pageable);
+
+        List<Long> productIds =  productPage.getContent()
+                .stream()
+                .map(Product::getId)
+                .toList();
+
+        Map<Long,ProductImageDTO> imageDTOMap = this.productImageService.findPrimaryImages(productIds);
+
+        List<ProductWithImageAndCategory> products = productPage.getContent()
+                .stream()
+                .map(p -> productMapper.toProductWithImagesAndCategory(
+                        p,
+                        imageDTOMap.get(p.getId()),
+                        new CategoryDTO(p.getCategory().getId(),p.getCategory().getName())
+                ))
+                .toList();
+        return new PageInfo<>(
+                products,
+                productPage.getNumber(),
+                productPage.getSize(),
+                productPage.getTotalElements(),
+                productPage.getTotalPages(),
+                productPage.isLast()
+        );
+    }
+
+    @Override
+    @Transactional
+    public ProductDTO update(Long id, UpdateProductRequest updateRequest) {
+        Product product = this.productRepository.findByIdWithCategoryAndImages(id)
+                .orElseThrow(()-> new ResourceNotFoundException("Product not found"));
 
 
-        InventoryDTO inventoryDTO = createInventory(savedProduct.getId(),request.stockQuantity());
-        CategoryDTO categoryDTO = new CategoryDTO(category.getId(),category.getName());
-        List<ProductImageDTO> images = productImageMapper.toProductImageDTOs(savedProduct.getImages());
+        this.productHelper.applyUpdate(updateRequest,product);
+
+        Product saved  = this.productRepository.save(product);
+
+        CategoryDTO categoryDTO = new CategoryDTO(
+                saved.getCategory().getId(),
+                saved.getCategory().getName()
+        );
+        InventoryDTO inventoryDTO = this.inventoryClient.fetchInventoryByProductId(saved.getId());
+        List<ProductImageDTO> imageDTOS = this.productImageMapper.toProductImageDTOs(saved.getImages());
+
 
         return this.productMapper.toProductDTO(
-                savedProduct,
+                saved,
                 inventoryDTO,
-                images,
+                imageDTOS,
                 categoryDTO
+
         );
     }
 
 
-    @Override
-    public List<ProductResponse> fetchAll() {
-        List<Product> products = this.productRepository.findAll();
-
-        return  products.stream()
-                .map(this.productMapper::toProductResponse)
-                .toList();
-
-    }
 
     @Override
-    public ProductResponse fetchById(Long id) {
+    @Transactional(readOnly = true)
+    public ProductResponse findById(Long id) {
         Product product = this.productRepository.findById(id).orElseThrow(
                 ()-> new ResourceNotFoundException(String.format("Product Id not found: %d",id))
         );
@@ -120,11 +184,6 @@ public class ProductServiceImpl implements ProductService {
         log.info("Product deleted:{}",id);
     }
 
-    @Override
-    public List<ProductDTO> fetchAllProductsDetail() {
-        List<Product> products =
-        return List.of();
-    }
 
     @Override
     @Transactional
@@ -144,6 +203,16 @@ public class ProductServiceImpl implements ProductService {
                 categoryDTO
         );
 
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Product findEntityById(Long id) {
+        if(id == null) {
+            throw  new IllegalArgumentException("Product id is null.");
+        }
+        return this.productRepository.findById(id)
+                .orElseThrow(()-> new ResourceNotFoundException("Product not found."));
     }
 
 
@@ -167,4 +236,6 @@ public class ProductServiceImpl implements ProductService {
             throw new BusinessInvalidException("Inventory creation failed:{}"+ e.getMessage());
         }
     }
+
+
 }

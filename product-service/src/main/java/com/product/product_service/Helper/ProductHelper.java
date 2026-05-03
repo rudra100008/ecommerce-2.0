@@ -1,6 +1,7 @@
 package com.product.product_service.Helper;
 
 import com.product.product_service.DTOs.Product.ProductRequest;
+import com.product.product_service.DTOs.Product.UpdateProductRequest;
 import com.product.product_service.Entities.Product;
 import com.product.product_service.Exceptions.AlreadyExistException;
 import com.product.product_service.Repository.ProductRepository;
@@ -28,6 +29,8 @@ public class ProductHelper {
                 .active(true)
                 .build();
     }
+
+
     public synchronized String generateSku(ProductRequest request,String category){
         if(request.sku() != null){
             String manualSku = request.sku().trim().toUpperCase();
@@ -56,6 +59,24 @@ public class ProductHelper {
         return candidate;
 
     }
+
+
+    public void applyUpdate(UpdateProductRequest req, Product product) {
+        if (req.name() != null && !req.name().isBlank())
+            product.setName(req.name());
+
+        if (req.description() != null && !req.description().isBlank())
+            product.setDescription(req.description());
+
+        if (req.price() != null)
+            product.setPrice(req.price());
+
+        if (req.discount() != null)
+            product.setDiscount(req.discount());
+    }
+
+
+    // ========== HELPER METHOD ============
 
 
     private String generateBaseSku(ProductRequest request, String category) {

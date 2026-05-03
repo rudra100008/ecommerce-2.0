@@ -14,4 +14,17 @@ public interface ProductImageRepository extends JpaRepository<ProductImage,Long>
             SELECT i FROM ProductImage i WHERE i.product.id = :productId
             """)
     List<ProductImage> findByProductId(@Param("productId") Long productId);
+
+    @Query("""
+            SELECT i FROM ProductImage i WHERE i.product.id IN :productIds
+            """)
+
+    List<ProductImage> findAllByProductIds(@Param("productIds")List<Long> productIds);
+
+    @Query("""
+            SELECT i FROM ProductImage i
+            WHERE i.product.id IN :productIds
+                 AND i.primaryImage = true
+            """)
+    List<ProductImage> findPrimaryImages(@Param("productIds")List<Long> productIds);
 }

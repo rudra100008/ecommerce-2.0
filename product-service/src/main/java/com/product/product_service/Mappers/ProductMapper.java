@@ -5,6 +5,7 @@ import com.product.product_service.DTOs.Inventory.InventoryDTO;
 import com.product.product_service.DTOs.Product.ProductRequest;
 import com.product.product_service.DTOs.Product.ProductResponse;
 import com.product.product_service.DTOs.Product.ProductDTO;
+import com.product.product_service.DTOs.Product.ProductWithImageAndCategory;
 import com.product.product_service.DTOs.ProductImage.ProductImageDTO;
 import com.product.product_service.Entities.Product;
 import org.mapstruct.Mapper;
@@ -49,4 +50,26 @@ public interface ProductMapper {
                 images
         );
     }
+
+    default ProductWithImageAndCategory toProductWithImagesAndCategory(
+            Product product,
+            ProductImageDTO productImageDTO,
+            CategoryDTO categoryDTO
+    ){
+        return new ProductWithImageAndCategory(
+                product.getId(),
+                product.getName(),
+                product.getDescription(),
+                product.getPrice(),
+                product.getDiscount(),
+                product.getSku(),
+                product.isActive(),
+                product.getCreatedAt(),
+                product.getUpdatedAt(),
+                categoryDTO,
+                productImageDTO
+        );
+    }
+
+
 }
