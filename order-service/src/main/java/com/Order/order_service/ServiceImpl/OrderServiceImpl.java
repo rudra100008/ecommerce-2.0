@@ -12,6 +12,7 @@ import com.Order.order_service.Entities.OrderItem;
 import com.Order.order_service.Entities.ShippingAddress;
 import com.Order.order_service.Enum.OrderStatus;
 import com.Order.order_service.Exceptions.BusinessInvalidException;
+import com.Order.order_service.Exceptions.ResourceNotFoundException;
 import com.Order.order_service.Mapper.OrderItemMapper;
 import com.Order.order_service.Mapper.OrderMapper;
 import com.Order.order_service.Mapper.ShippingAddressMapper;
@@ -35,7 +36,6 @@ public class OrderServiceImpl implements OrderService {
     private final OrderMapper orderMapper;
     private final OrderItemMapper orderItemMapper;
     private final ShippingAddressMapper shippingAddressMapper;
-    private final OrderItemService orderItemService;
     private final ProductClient productClient;
 
     @Override
@@ -90,17 +90,27 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponse getOrderById(Long orderId, Long userId) {
-        return null;
+        Order order = this.orderRepository.findByIdAndUserId(orderId,userId)
+                .orElseThrow(()-> new ResourceNotFoundException("Order not found"));
+
+        List<OrderItemResponse> orderItemResponses = this.orderItemMapper.toOrderItemResponses(order.getOrderItems());
+        ShippingAddressDTO addressDTO = this.shippingAddressMapper.toDTO(order.getShippingAddress());
+        return  this.orderMapper.toResponse(
+                order,
+                orderItemResponses,
+                addressDTO
+        );
     }
 
-    @Override
-    public OrderResponse updateOrder(Long orderId, Long userId, UpdateOrderRequest request) {
-        return null;
-    }
 
     @Override
     public void cancelOrder(Long orderId, Long userId) {
+        Order order = this.orderRepository.findByIdAndUserId(orderId,userId)
+                .orElseThrow(()-> new ResourceNotFoundException("Order not found."));
 
+        order.getOrderItems().forEach(order::removeOrderItem);
+
+        this.orderRepository.delete(order);
     }
 
     @Override

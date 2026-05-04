@@ -27,39 +27,18 @@ import java.util.stream.Collectors;
 public class ProductImageServiceImpl implements ProductImageService {
     private final ProductImageRepository productImageRepository;
     private final ProductImageMapper productImageMapper;
-    private final ProductService productService;
     private final MediaClient mediaClient;
 
 
-    @Override
-    public List<ProductImageDTO> uploadImages(Long productId, List<MultipartFile> imageFiles) {
-        Product product = this.productService.findEntityById(productId);
-
-        List<ProductImage> productImages = null;
-        if(imageFiles != null && !imageFiles.isEmpty()){
-            List<MediaUploadResponse> uploaded = uploadImages(imageFiles);
-            productImages = uploaded.stream()
-                    .map(u ->{
-                        ProductImage productImage = ProductImage
-                                .builder()
-                                .imageUrl(u.imageUrl())
-                                .publicId(u.publicId())
-                                .folder("products")
-                                .primaryImage(false)
-                                .build();
-                        product.addImage(productImage);
-                        return productImage;
-                    }).toList();
-        }
-        return this.productImageMapper.toProductImageDTOs(productImages);
-    }
 
     @Override
+    @Transactional
     public void delete(Long id) {
         ProductImage productImage = this.productImageRepository.findById(id)
                 .orElseThrow(()-> new ResourceNotFoundException("product image not found"));
 
         mediaClient.deleteImage(new MediaDeleteRequest(productImage.getPublicId()));
+        this.productImageRepository.delete(productImage);
         log.info("Product image delete successfully:{}",id);
     }
 
@@ -104,9 +83,5 @@ public class ProductImageServiceImpl implements ProductImageService {
     }
 
     // =========== HELPER METHOD ===========
-    private List<MediaUploadResponse> uploadImages(List<MultipartFile> imageFiles) {
-        return imageFiles.stream()
-                .map(file -> mediaClient.uploadImage(file, "products"))
-                .toList();
-    }
+
 }

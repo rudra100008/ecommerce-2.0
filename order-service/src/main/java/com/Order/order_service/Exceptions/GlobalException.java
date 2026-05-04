@@ -1,7 +1,7 @@
 package com.Order.order_service.Exceptions;
 
-import com.product.product_service.DTOs.ApiErrorResponse;
-import com.product.product_service.Exceptions.ResourceNotFoundException;
+
+import com.Order.order_service.DTOs.Error.ApiErrorResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;

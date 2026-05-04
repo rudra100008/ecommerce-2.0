@@ -6,6 +6,9 @@ import com.inventory_service.DTOs.InventoryDTO.InventoryResponse;
 import com.inventory_service.DTOs.InventoryDTO.InventoryWithProduct;
 import com.inventory_service.Services.InventoryService;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.Response;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,10 +20,11 @@ public class InventoryController {
     private final InventoryService inventoryService;
 
     @PostMapping()
-    public InventoryResponse create(
+    public ResponseEntity<InventoryResponse> create(
             @RequestBody InventoryRequest request
     ){
-        return this.inventoryService.create(request);
+        InventoryResponse response = this.inventoryService.create(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping
@@ -36,10 +40,11 @@ public class InventoryController {
     }
 
     @GetMapping("/product/{productId}")
-    public InventoryResponse fetchByProductId(
+    public ResponseEntity<?> fetchByProductId(
             @PathVariable("productId")Long productId
     ){
-        return  this.inventoryService.fetchByProductId(productId);
+        InventoryResponse response = this.inventoryService.fetchByProductId(productId);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @DeleteMapping("/{id}")

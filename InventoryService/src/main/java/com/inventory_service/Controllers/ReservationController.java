@@ -1,11 +1,19 @@
 package com.inventory_service.Controllers;
 
+import com.inventory_service.DTOs.Error.ValidationErrorResponse;
+import com.inventory_service.DTOs.Error.ValidationErrors;
 import com.inventory_service.DTOs.ReservationDTO.ReservationRequest;
 import com.inventory_service.DTOs.ReservationDTO.ReservationResponse;
 import com.inventory_service.Services.ReservationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RequestMapping("/api/inventory/reservation")
 @RestController
@@ -16,27 +24,46 @@ public class ReservationController {
 
 
     @PostMapping()
-    public ReservationResponse createReservation(
-             @Valid  @RequestBody ReservationRequest request
+    public ResponseEntity<?> createReservation(
+             @Valid  @RequestBody ReservationRequest request,
+             BindingResult result
             ){
-
-        return this.reservationService.createReservation(request);
+        if(result.hasErrors()){
+            List<ValidationErrorResponse> errorResponses = new ArrayList<>();
+            result.getFieldErrors()
+                    .forEach(f ->
+                    errorResponses.add(new ValidationErrorResponse(f.getField(),f.getDefaultMessage()))
+            );
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ValidationErrors(errorResponses));
+        }
+        ReservationResponse response =  this.reservationService.createReservation(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping
-    public ReservationResponse updateReservationQuantity(
-            @RequestBody ReservationRequest request
+    public ResponseEntity<?> updateReservationQuantity(
+            @Valid @RequestBody ReservationRequest request,
+            BindingResult result
     ){
-        return  this.reservationService.updateReservationQuantity(request);
+        if(result.hasErrors()){
+            List<ValidationErrorResponse> errorResponses = new ArrayList<>();
+            result.getFieldErrors()
+                    .forEach(f ->
+                            errorResponses.add(new ValidationErrorResponse(f.getField(),f.getDefaultMessage()))
+                    );
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ValidationErrors(errorResponses));
+        }
+        ReservationResponse response = this.reservationService.updateReservationQuantity(request);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @DeleteMapping("/user/{userId}/inventory/{inventoryId}")
-    public String deleteReservation(
+    public ResponseEntity<?> deleteReservation(
             @PathVariable Long userId,
             @PathVariable Long inventoryId
     ){
         this.reservationService.deleteReservation(userId,inventoryId);
-        return "Reservation Deleted Successfully";
+        return ResponseEntity.status(HttpStatus.OK).body("Reservation Deleted Successfully");
     }
 
     @GetMapping("get_reserved_quantity/inventory/{inventoryId}")
