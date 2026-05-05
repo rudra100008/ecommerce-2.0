@@ -6,9 +6,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 public record ReservationRequest (
-        @NotNull(message = "inventory_id cannot be null")
-        Long inventoryId,
-        @NotNull(message = "user_id cannot be null.")
+        @NotNull(message = "Product Id is required")
+        Long productId,
+        @NotNull(message = "User Id is required.")
         Long userId,
         @Positive(message = "reserved quantity must be positive.")
         @Min(value = 1, message = "Quantity must be greater than 0.")

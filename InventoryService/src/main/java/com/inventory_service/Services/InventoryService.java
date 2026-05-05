@@ -27,7 +27,7 @@ public interface InventoryService {
     // fetches all the inventory with product in details
     List<InventoryWithProduct> getAll();
 
-    long getAvailableStockQuantity(Long inventoryId);
+    long getAvailableStockQuantity(Long productId);
 
 
     Inventory findById(Long id);

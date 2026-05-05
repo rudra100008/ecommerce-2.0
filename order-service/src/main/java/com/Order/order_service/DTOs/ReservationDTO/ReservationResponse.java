@@ -1,6 +1,6 @@
 package com.Order.order_service.DTOs.ReservationDTO;
 
-import com.inventory_service.Enums.ReservationStatus;
+import com.Order.order_service.Enum.ReservationStatus;
 
 import java.time.LocalDateTime;
 

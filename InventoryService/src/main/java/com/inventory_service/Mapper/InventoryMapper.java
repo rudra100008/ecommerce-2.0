@@ -4,7 +4,7 @@ package com.inventory_service.Mapper;
 import com.inventory_service.DTOs.InventoryDTO.InventoryRequest;
 import com.inventory_service.DTOs.InventoryDTO.InventoryResponse;
 import com.inventory_service.DTOs.InventoryDTO.InventoryWithProduct;
-import com.inventory_service.DTOs.ProductDTO;
+import com.inventory_service.DTOs.ProductResponse;
 import com.inventory_service.Entities.Inventory;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -35,16 +35,16 @@ public interface InventoryMapper {
 
     @Mapping(source = "inventory.id",target = "inventoryId")
     @Mapping(source = "inventory.stockQuantity", target = "stockQuantity")
-    @Mapping(source = "productDTO",target = "productDTO")
-    InventoryWithProduct toInventoryWithProduct( Inventory inventory, ProductDTO productDTO);
+    @Mapping(source = "product",target = "product")
+    InventoryWithProduct toInventoryWithProduct(Inventory inventory, ProductResponse product);
 
 
-    default List<InventoryWithProduct> toInventoriesWithProducts(List<Inventory> inventories,List<ProductDTO> productDTOS){
-        if(inventories == null && productDTOS == null){
+    default List<InventoryWithProduct> toInventoriesWithProducts(List<Inventory> inventories,List<ProductResponse> products){
+        if(inventories == null && products == null){
             return  new ArrayList<>();
         }
-        Map<Long,ProductDTO> productDTOMap = productDTOS.stream()
-                .collect(Collectors.toMap(p-> p.getId(),p->p));
+        Map<Long,ProductResponse> productDTOMap = products.stream()
+                .collect(Collectors.toMap(ProductResponse::id, p->p));
 
         return inventories != null ? inventories.stream()
                 .map(inv -> toInventoryWithProduct(inv, productDTOMap.get(inv.getProductId())))

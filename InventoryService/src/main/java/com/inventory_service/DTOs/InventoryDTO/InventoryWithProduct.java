@@ -1,18 +1,16 @@
 package com.inventory_service.DTOs.InventoryDTO;
 
 
-import com.inventory_service.DTOs.ProductDTO;
+import com.inventory_service.DTOs.ProductResponse;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Setter
-@Getter
-@AllArgsConstructor
-@NoArgsConstructor
-public class InventoryWithProduct {
-    private Long inventoryId;
-    private long stockQuantity;
-    private ProductDTO productDTO;
+
+public record InventoryWithProduct (
+        Long inventoryId,
+        Long stockQuantity,
+        ProductResponse product
+) {
 }

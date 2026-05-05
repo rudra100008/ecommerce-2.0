@@ -14,17 +14,35 @@ import java.util.Optional;
 @Repository
 public interface ReservationRepository extends JpaRepository<Reservation,Long> {
 
-    boolean existsByUserIdAndInventoryIdAndStatus(long userId, long inventoryId, ReservationStatus status);
-    Optional<Reservation> findByUserIdAndInventoryIdAndStatus(long userId,long inventoryId, ReservationStatus status);
+    @Query("""
+            SELECT CASE WHEN COUNT(r) > 0 THEN true ELSE false END
+            FROM Reservation r
+            WHERE r.userId = :userId
+            AND r.inventory.productId = :productId
+            AND r.status = :status
+            """)
+    boolean existsByUserIdAndProductIdAndStatus(@Param("userId") Long userId,
+                                                @Param("productId") Long productId,
+                                                @Param("status") ReservationStatus status);
+
+
+    @Query("""
+            SELECT r FROM Reservation r
+            WHERE r.userId = :userId
+            AND r.inventory.productId = :productId
+            AND r.status = :status
+            
+            """)
+    Optional<Reservation> findByUserIdAndProductIdAndStatus(@Param("userId") Long userId,@Param("productId") Long productId,@Param("status") ReservationStatus status);
 
     @Query("""
             SELECT COALESCE(SUM(reservedQuantity),0)
             FROM Reservation r
-            WHERE r.inventory.id = :inventoryId
+            WHERE r.inventory.productId = :productId
                   AND r.status = 'ACTIVE'
                   AND r.expiresAt > :now
             """)
-    Long getTotalReservedQuantityByInventoryId(@Param("inventoryId") long inventoryId, @Param("now")LocalDateTime now);
+    Long getTotalReservedQuantityByProductId(@Param("productId") Long productId, @Param("now")LocalDateTime now);
 
 
     @Modifying

@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "carts")
+@Table(name = "carts",uniqueConstraints = @UniqueConstraint(columnNames = {"user_id"}))
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter

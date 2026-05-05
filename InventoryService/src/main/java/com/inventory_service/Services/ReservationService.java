@@ -9,7 +9,8 @@ public interface ReservationService {
 
     ReservationResponse createReservation(ReservationRequest request);
     ReservationResponse updateReservationQuantity(ReservationRequest request);
-    void deleteReservation(Long userId, Long inventoryId);
-    long getTotalReservationByInventoryId(Long inventoryId);
+    void deleteReservation(Long userId, Long productId);
+    Long getTotalReservationByProductId(Long productId);
+
 
 }

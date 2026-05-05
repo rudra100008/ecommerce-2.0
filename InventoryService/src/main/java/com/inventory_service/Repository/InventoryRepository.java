@@ -19,9 +19,15 @@ public interface InventoryRepository extends JpaRepository<Inventory,Long> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
-            SELECT i FROM Inventory i WHERE i.id = :id
+            SELECT i FROM Inventory i WHERE i.id = :inventoryId
             """)
-    Optional<Inventory> findByIdWithLock(@Param("id")Long id);
+    Optional<Inventory> findByIdWithLock(@Param("inventoryId")Long inventoryId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+            SELECT i FROM Inventory i WHERE i.productId = :productId
+            """)
+    Optional<Inventory> findByProductIdWithLock(@Param("productId")Long productId);
 
     @Lock(LockModeType.PESSIMISTIC_READ)
     @Query("""
@@ -34,7 +40,8 @@ public interface InventoryRepository extends JpaRepository<Inventory,Long> {
             LEFT JOIN Reservation r ON r.inventory.id = i.id
                               AND r.status = 'ACTIVE'
                               AND r.expiresAt > :now
-            WHERE i.id = :inventoryId
+            WHERE i.productId = :productId
+            GROUP BY i.id,i.stockQuantity
             """)
-    Long getAvailableQuantity(@Param("inventoryId") Long inventoryId, @Param("now")LocalDateTime now);
+    Long getAvailableQuantity(@Param("productId") Long productId, @Param("now")LocalDateTime now);
 }

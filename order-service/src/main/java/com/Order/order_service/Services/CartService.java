@@ -1,10 +1,16 @@
 package com.Order.order_service.Services;
 
-import com.Order.order_service.DTOs.Cart.CartRequest;
 import com.Order.order_service.DTOs.Cart.CartResponse;
+import com.Order.order_service.DTOs.CartItem.CartItemRequest;
 import org.springframework.stereotype.Service;
 
 @Service
 public interface CartService {
-    CartResponse addToCart(CartRequest request);
+    CartResponse createCart(Long userId);
+    CartResponse addToCart(Long userId, CartItemRequest request);
+    void clearCartByUserId(Long userId);
+    void delete(Long userId);
+    CartResponse getCartByUserId(Long userId);
+    CartResponse removeFromCart(Long userId,Long cartItemId);
+
 }

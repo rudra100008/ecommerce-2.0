@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RequestMapping("/api/inventory/reservation")
 @RestController
@@ -23,7 +24,7 @@ public class ReservationController {
 
 
 
-    @PostMapping()
+    @PostMapping("/create")
     public ResponseEntity<?> createReservation(
              @Valid  @RequestBody ReservationRequest request,
              BindingResult result
@@ -40,7 +41,7 @@ public class ReservationController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PutMapping
+    @PutMapping("/update")
     public ResponseEntity<?> updateReservationQuantity(
             @Valid @RequestBody ReservationRequest request,
             BindingResult result
@@ -57,20 +58,24 @@ public class ReservationController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @DeleteMapping("/user/{userId}/inventory/{inventoryId}")
+    @DeleteMapping("/user/{userId}/product/{productId}")
     public ResponseEntity<?> deleteReservation(
             @PathVariable Long userId,
-            @PathVariable Long inventoryId
+            @PathVariable Long productId
     ){
-        this.reservationService.deleteReservation(userId,inventoryId);
+        this.reservationService.deleteReservation(userId,productId);
         return ResponseEntity.status(HttpStatus.OK).body("Reservation Deleted Successfully");
     }
 
-    @GetMapping("get_reserved_quantity/inventory/{inventoryId}")
-    public long getTotalReservationByInventoryId(
-            @PathVariable Long inventoryId
+    @GetMapping("/get_reserved_quantity/product/{productId}")
+    public ResponseEntity<?> getTotalReservationByProductId(
+            @PathVariable Long productId
     ){
-        return  this.reservationService.getTotalReservationByInventoryId(inventoryId);
+        Long totalReservation = this.reservationService.getTotalReservationByProductId(productId);
+        return ResponseEntity.status(HttpStatus.OK).body(Map.of(
+                "productId",productId,
+                "totalReservation",totalReservation
+        ));
     }
 
 }

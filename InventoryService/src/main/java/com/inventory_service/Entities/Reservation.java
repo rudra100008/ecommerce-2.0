@@ -34,7 +34,7 @@ public class Reservation {
     private Long userId;
 
     @Column(nullable = false)
-    private long reservedQuantity;
+    private Long reservedQuantity;
 
     @Column(nullable = false)
     private LocalDateTime reservedAt;

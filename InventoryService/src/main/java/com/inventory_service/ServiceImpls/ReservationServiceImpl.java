@@ -8,8 +8,8 @@ import com.inventory_service.Enums.ReservationStatus;
 import com.inventory_service.Exceptions.ResourceNotFoundException;
 import com.inventory_service.Helpers.ReservationHelper;
 import com.inventory_service.Mapper.ReservationMapper;
+import com.inventory_service.Repository.InventoryRepository;
 import com.inventory_service.Repository.ReservationRepository;
-import com.inventory_service.Services.InventoryService;
 import com.inventory_service.Services.ReservationService;
 import com.inventory_service.Validators.ReservationValidators;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class ReservationServiceImpl implements ReservationService {
     private final ReservationRepository reservationRepository;
-    private final InventoryService inventoryService;
+    private final InventoryRepository inventoryRepository;
     private final ReservationValidators reservationValidators;
     private final ReservationHelper reservationHelper;
     private final ReservationMapper reservationMapper;
@@ -31,11 +31,12 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     @Transactional
     public ReservationResponse createReservation(ReservationRequest request) {
-        reservationValidators.validateNoDuplicateReservation(request.userId(),request.inventoryId());
+        reservationValidators.validateNoDuplicateReservation(request.userId(),request.productId());
 
-        Inventory inventory = this.inventoryService.findByIdWithLock(request.inventoryId());
+        Inventory inventory = this.inventoryRepository.findByProductIdWithLock(request.productId())
+                .orElseThrow(()-> new ResourceNotFoundException("Inventory not found"));
 
-        reservationValidators.validateStockAvailability(inventory.getId(),request.reservedQuantity());
+        reservationValidators.validateStockAvailability(request.productId(),request.reservedQuantity());
 
         Reservation reservation = reservationHelper.buildReservation(request,inventory);
         Reservation saved = this.reservationRepository.save(reservation);
@@ -46,13 +47,16 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     @Transactional
     public ReservationResponse updateReservationQuantity(ReservationRequest request) {
-        Reservation reservation = reservationRepository.findByUserIdAndInventoryIdAndStatus(
+        Reservation reservation = reservationRepository.findByUserIdAndProductIdAndStatus(
                 request.userId(),
-                request.inventoryId(),
+                request.productId(),
                 ReservationStatus.ACTIVE
         ).orElseThrow(()-> new ResourceNotFoundException("Reservation not found"));
-        Inventory inventory = this.inventoryService.findByIdWithLock(request.inventoryId());
-        reservationValidators.validateStockAvailability(inventory.getId(),request.reservedQuantity());
+
+        this.inventoryRepository.findByProductIdWithLock(request.productId())
+                .orElseThrow(()-> new ResourceNotFoundException("Inventory not found"));
+
+        reservationValidators.validateStockAvailability(request.productId(),request.reservedQuantity());
 
         reservation.setReservedQuantity(request.reservedQuantity());
         reservation.setReservedAt(LocalDateTime.now());
@@ -65,10 +69,10 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     @Transactional
-    public void deleteReservation(Long userId, Long inventoryId) {
-        Reservation reservation = this.reservationRepository.findByUserIdAndInventoryIdAndStatus(
+    public void deleteReservation(Long userId, Long productId) {
+        Reservation reservation = this.reservationRepository.findByUserIdAndProductIdAndStatus(
                 userId,
-                inventoryId,
+                productId,
                 ReservationStatus.ACTIVE
         ).orElseThrow(()-> new ResourceNotFoundException("Reservation not found."));
 
@@ -79,8 +83,8 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     @Transactional
-    public long getTotalReservationByInventoryId(Long inventoryId) {
-        Long result = this.reservationRepository.getTotalReservedQuantityByInventoryId(inventoryId,LocalDateTime.now());
+    public Long getTotalReservationByProductId(Long productId) {
+        Long result = this.reservationRepository.getTotalReservedQuantityByProductId(productId,LocalDateTime.now());
         return result != null ? result : 0L;
     }
 }

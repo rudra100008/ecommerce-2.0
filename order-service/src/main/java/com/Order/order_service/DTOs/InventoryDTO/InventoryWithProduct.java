@@ -1,7 +1,6 @@
 package com.Order.order_service.DTOs.InventoryDTO;
 
-
-import com.inventory_service.DTOs.ProductDTO;
+import com.Order.order_service.DTOs.Product.ProductResponse;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,5 +13,5 @@ import lombok.Setter;
 public class InventoryWithProduct {
     private Long inventoryId;
     private long stockQuantity;
-    private ProductDTO productDTO;
+    private ProductResponse product;
 }

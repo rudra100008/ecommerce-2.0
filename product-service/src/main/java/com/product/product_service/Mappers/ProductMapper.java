@@ -26,6 +26,7 @@ public interface ProductMapper {
     @Mapping(target = "sku", ignore = true)
     Product toProduct(ProductRequest request);
 
+
     ProductResponse toProductResponse(Product product);
 
 

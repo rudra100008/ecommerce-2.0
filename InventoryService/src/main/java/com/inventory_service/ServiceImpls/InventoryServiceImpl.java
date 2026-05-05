@@ -2,10 +2,11 @@ package com.inventory_service.ServiceImpls;
 
 
 
+import com.inventory_service.Constants.PageConstant;
 import com.inventory_service.DTOs.InventoryDTO.InventoryRequest;
 import com.inventory_service.DTOs.InventoryDTO.InventoryResponse;
 import com.inventory_service.DTOs.InventoryDTO.InventoryWithProduct;
-import com.inventory_service.DTOs.ProductDTO;
+import com.inventory_service.DTOs.ProductResponse;
 import com.inventory_service.Entities.Inventory;
 import com.inventory_service.Exceptions.ResourceNotFoundException;
 import com.inventory_service.Mapper.InventoryMapper;
@@ -13,6 +14,7 @@ import com.inventory_service.Repository.InventoryRepository;
 import com.inventory_service.Services.InventoryService;
 import com.inventory_service.Services.ProductClient;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.query.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -73,21 +75,26 @@ public class InventoryServiceImpl implements InventoryService {
     public InventoryWithProduct getInventoryDetails(Long inventoryId) {
         Inventory inventory = this.inventoryRepository.findById(inventoryId)
                 .orElseThrow(()-> new ResourceNotFoundException("Inventory not found"));
-        ProductDTO productDTO = productClient.getProductById(inventory.getProductId());
+        ProductResponse productDTO = productClient.getProductById(inventory.getProductId());
         return this.inventoryMapper.toInventoryWithProduct(inventory,productDTO);
     }
 
     @Override
     public List<InventoryWithProduct> getAll() {
         List<Inventory> inventories =  this.inventoryRepository.findAll();
-        List<ProductDTO> productDTO = productClient.getAllProducts();
+        List<ProductResponse> productDTO = productClient.getAllProducts(
+                0,
+                20,
+                PageConstant.SORT_BY,
+                PageConstant.SORT_DIR
+        );
 
         return this.inventoryMapper.toInventoriesWithProducts(inventories,productDTO);
     }
 
     @Override
-    public long getAvailableStockQuantity(Long inventoryId) {
-        Long result = inventoryRepository.getAvailableQuantity(inventoryId, LocalDateTime.now());
+    public long getAvailableStockQuantity(Long productId) {
+        Long result = inventoryRepository.getAvailableQuantity(productId, LocalDateTime.now());
         return result != null ? result : 0L;
     }
 
