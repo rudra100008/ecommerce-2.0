@@ -11,6 +11,7 @@ import com.product.product_service.Entities.Product;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -29,6 +30,14 @@ public interface ProductMapper {
 
     ProductResponse toProductResponse(Product product);
 
+    default List<ProductResponse> toProductResponseList(List<Product> products){
+        if (products == null){
+            return new ArrayList<>();
+        }
+        return products.stream()
+                .map(this::toProductResponse)
+                .toList();
+    }
 
     default ProductDTO toProductDTO(
             Product product,

@@ -1,21 +1,17 @@
 package com.product.product_service.ServiceImpls;
 
 import com.product.product_service.DTOs.Media.MediaDeleteRequest;
-import com.product.product_service.DTOs.Media.MediaUploadResponse;
 import com.product.product_service.DTOs.ProductImage.ProductImageDTO;
-import com.product.product_service.Entities.Product;
 import com.product.product_service.Entities.ProductImage;
-import com.product.product_service.Exceptions.ResourceNotFoundException;
 import com.product.product_service.Mappers.ProductImageMapper;
 import com.product.product_service.Repository.ProductImageRepository;
-import com.product.product_service.Services.MediaClient;
+import com.product.product_service.client.MediaClient;
 import com.product.product_service.Services.ProductImageService;
-import com.product.product_service.Services.ProductService;
+import com.shared_library.Exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -35,7 +31,7 @@ public class ProductImageServiceImpl implements ProductImageService {
     @Transactional
     public void delete(Long id) {
         ProductImage productImage = this.productImageRepository.findById(id)
-                .orElseThrow(()-> new ResourceNotFoundException("product image not found"));
+                .orElseThrow(()-> new ResourceNotFoundException("Product image not found"));
 
         mediaClient.deleteImage(new MediaDeleteRequest(productImage.getPublicId()));
         this.productImageRepository.delete(productImage);

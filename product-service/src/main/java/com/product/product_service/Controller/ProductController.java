@@ -1,6 +1,7 @@
 package com.product.product_service.Controller;
 
 import com.product.product_service.Constants.PageConstant;
+import com.product.product_service.DTOs.ApiErrorResponse;
 import com.product.product_service.DTOs.Category.CategoryRequest;
 import com.product.product_service.DTOs.PageInfo;
 import com.product.product_service.DTOs.Product.ProductRequest;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -77,6 +79,18 @@ public class ProductController {
             @PathVariable Long productId
     ){
         return this.productService.getProductDetails(productId);
+    }
+
+    @GetMapping("/fetchByIds")
+    public ResponseEntity<?> fetchByIds(
+            @RequestParam("ids") List<Long> productIds
+    ){
+        if (productIds == null || productIds.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body("Product IDs list cannot be empty");
+        }
+        List<ProductResponse> productResponseList = this.productService.findByIds(productIds);
+        return ResponseEntity.status(HttpStatus.OK).body(productResponseList);
     }
 
 

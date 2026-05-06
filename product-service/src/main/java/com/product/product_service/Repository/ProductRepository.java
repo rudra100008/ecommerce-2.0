@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface ProductRepository  extends JpaRepository<Product,Long> {
@@ -30,6 +31,9 @@ public interface ProductRepository  extends JpaRepository<Product,Long> {
     @Query("SELECT p FROM Product p WHERE p.active = true")
     Page<Product> findAllWithCategory(Pageable pageable);
 
+
+    @Query("SELECT p.id FROM Product p WHERE p.id IN :ids")
+    Set<Long> findExistingIds(@Param("ids") List<Long> ids);
 
 
 }

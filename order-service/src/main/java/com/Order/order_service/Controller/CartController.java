@@ -56,4 +56,21 @@ public class CartController {
 
         return ResponseEntity.status(HttpStatus.OK).body(cartResponse);
     }
+
+
+    @DeleteMapping("/clear_cart/user/{userId}")
+    public ResponseEntity<?> clearCart(
+            @PathVariable Long userId
+    ){
+        this.cartService.clearCartByUserId(userId);
+        return ResponseEntity.status(HttpStatus.OK).body("Cart cleared");
+    }
+
+    @GetMapping("/fetch/user/{userId}")
+    public ResponseEntity<?> fetchCart(
+            @PathVariable Long userId
+    ){
+        CartResponse cartResponse = this.cartService.getCartByUserId(userId);
+        return ResponseEntity.status(HttpStatus.OK).body(cartResponse);
+    }
 }

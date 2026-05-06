@@ -9,15 +9,15 @@ import com.Order.order_service.DTOs.ReservationDTO.ReservationRequest;
 import com.Order.order_service.DTOs.ReservationDTO.ReservationResponse;
 import com.Order.order_service.Entities.Cart;
 import com.Order.order_service.Entities.CartItem;
-import com.Order.order_service.Exceptions.ResourceNotFoundException;
+
 import com.Order.order_service.Mapper.CartItemMapper;
 import com.Order.order_service.Mapper.CartMapper;
 import com.Order.order_service.Repository.CartItemRepository;
 import com.Order.order_service.Repository.CartRepository;
-import com.Order.order_service.Services.CartItemService;
 import com.Order.order_service.Services.CartService;
-import com.Order.order_service.Services.InventoryClient;
-import com.Order.order_service.Services.ProductClient;
+import com.Order.order_service.client.InventoryClient;
+import com.Order.order_service.client.ProductClient;
+import com.shared_library.Exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -75,13 +75,11 @@ public class CartServiceImpl implements CartService {
 
             // if product is already in cart update the quantity not add same product in cart
             CartItem item = existingItem.get();
-            int newQuantity = item.getQuantity() + request.quantity();
 
+            ReservationResponse reservationResponse = inventoryClient.updateReservationQuantity(new ReservationRequest(
+                    product.id(), userId, (long) request.quantity()));
 
-            inventoryClient.updateReservationQuantity(new ReservationRequest(
-                    product.id(), userId, (long) newQuantity));
-
-            item.setQuantity(newQuantity);
+            item.setQuantity(reservationResponse.reservedQuantity().intValue());
             cartItemRepository.save(item);
             log.info("Updated quantity for productId: {} userId: {}",
                     request.productId(), userId);

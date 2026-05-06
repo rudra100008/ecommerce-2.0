@@ -13,14 +13,16 @@ import com.product.product_service.DTOs.ProductImage.ProductImageDTO;
 import com.product.product_service.Entities.Category;
 import com.product.product_service.Entities.Product;
 import com.product.product_service.Entities.ProductImage;
-import com.product.product_service.Exceptions.BusinessInvalidException;
-import com.product.product_service.Exceptions.ResourceNotFoundException;
+
 import com.product.product_service.Helper.ProductHelper;
 import com.product.product_service.Mappers.ProductImageMapper;
 import com.product.product_service.Mappers.ProductMapper;
-import com.product.product_service.Validator.ProductValidator;
 import com.product.product_service.Repository.ProductRepository;
 import com.product.product_service.Services.*;
+import com.product.product_service.client.InventoryClient;
+import com.product.product_service.client.MediaClient;
+import com.shared_library.Exceptions.BusinessInvalidException;
+import com.shared_library.Exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -31,9 +33,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -203,6 +204,37 @@ public class ProductServiceImpl implements ProductService {
                 categoryDTO
         );
 
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductResponse> findByIds(List<Long> productIds) {
+        if (productIds == null || productIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Product> products = this.productRepository.findAllById(productIds);
+        List<Long> uniqueProductIds = productIds.stream()
+                .distinct()
+                .toList();
+
+        Set<Long> foundIds = products.stream()
+                .map(Product::getId)
+                .collect(Collectors.toSet());
+
+        List<Long> missingIds = uniqueProductIds.stream()
+                .filter(id -> !foundIds.contains(id))
+                .toList();
+
+        if (!missingIds.isEmpty()) {
+            String errorMessage = String.format(
+                    "Products not found with IDs: %s. (Requested: %d, Found: %d)",
+                    missingIds, uniqueProductIds.size(), foundIds.size()
+            );
+            throw new ResourceNotFoundException(errorMessage);
+        }
+
+        return this.productMapper.toProductResponseList(products);
     }
 
     @Override

@@ -8,13 +8,12 @@ import com.inventory_service.DTOs.InventoryDTO.InventoryResponse;
 import com.inventory_service.DTOs.InventoryDTO.InventoryWithProduct;
 import com.inventory_service.DTOs.ProductResponse;
 import com.inventory_service.Entities.Inventory;
-import com.inventory_service.Exceptions.ResourceNotFoundException;
 import com.inventory_service.Mapper.InventoryMapper;
 import com.inventory_service.Repository.InventoryRepository;
 import com.inventory_service.Services.InventoryService;
-import com.inventory_service.Services.ProductClient;
+import com.inventory_service.client.ProductClient;
+import com.shared_library.Exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.query.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

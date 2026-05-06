@@ -8,6 +8,7 @@ public record ReservationResponse(
         Long reservationId,
         Long inventoryId,
         Long userId,
+        Long productId,
         Long reservedQuantity,
         LocalDateTime reservedAt,
         LocalDateTime expiresAt,

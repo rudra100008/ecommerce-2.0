@@ -4,6 +4,8 @@ import com.inventory_service.DTOs.Error.ValidationErrorResponse;
 import com.inventory_service.DTOs.Error.ValidationErrors;
 import com.inventory_service.DTOs.ReservationDTO.ReservationRequest;
 import com.inventory_service.DTOs.ReservationDTO.ReservationResponse;
+import com.inventory_service.Entities.Reservation;
+import com.inventory_service.Enums.ReservationStatus;
 import com.inventory_service.Services.ReservationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -58,7 +60,15 @@ public class ReservationController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @DeleteMapping("/user/{userId}/product/{productId}")
+    @DeleteMapping("/releaseReservation/user/{userId}")
+    public ResponseEntity<?> releaseAllReservation(
+            @PathVariable Long userId,
+            @RequestParam("productIds") List<Long> productIds
+    ){
+        this.reservationService.releaseAllReservation(userId,productIds);
+        return ResponseEntity.status(HttpStatus.OK).body("Reservation Deleted Successfully");
+    }
+    @DeleteMapping("/delete/user/{userId}/product/{productId}")
     public ResponseEntity<?> deleteReservation(
             @PathVariable Long userId,
             @PathVariable Long productId
@@ -76,6 +86,35 @@ public class ReservationController {
                 "productId",productId,
                 "totalReservation",totalReservation
         ));
+    }
+
+    @GetMapping("/fetch/user/{userId}/product/{productId}")
+    public ResponseEntity<?> fetchByUserIdAndProductId(
+            @PathVariable Long userId,
+            @PathVariable Long productId
+    ){
+        ReservationResponse response = this.reservationService.fetchActiveByUserIdAndProductId(userId,productId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/validateReservation/user/{userId}")
+    public ResponseEntity<?> checkStatus(
+            @PathVariable Long userId,
+            @RequestParam("ids") List<Long> productIds
+    ){
+        List<ReservationResponse> responses = this.reservationService.validateReservation(userId,productIds);
+        return ResponseEntity.status(HttpStatus.OK).body(responses);
+    }
+
+    @DeleteMapping("/deductStock/user/{userId}")
+    public ResponseEntity<?> convertReservation(
+            @PathVariable Long userId,
+            @RequestParam("productIds")List<Long> productIds
+    ){
+        this.reservationService.convertReservation(userId,productIds);
+
+        return ResponseEntity.status(HttpStatus.OK).body("Stock deducted from Inventory.");
     }
 
 }

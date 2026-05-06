@@ -22,8 +22,7 @@ public interface ProductService {
      void delete(Long id);
 
      ProductDTO getProductDetails(Long productId);
-
-
+     List<ProductResponse> findByIds(List<Long> productIds);
 
      Product findEntityById(Long id);
 

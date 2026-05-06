@@ -3,8 +3,8 @@ package com.product.product_service.Helper;
 import com.product.product_service.DTOs.Product.ProductRequest;
 import com.product.product_service.DTOs.Product.UpdateProductRequest;
 import com.product.product_service.Entities.Product;
-import com.product.product_service.Exceptions.AlreadyExistException;
 import com.product.product_service.Repository.ProductRepository;
+import com.shared_library.Exceptions.AlreadyExistException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

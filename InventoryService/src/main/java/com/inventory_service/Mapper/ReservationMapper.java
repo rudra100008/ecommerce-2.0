@@ -6,6 +6,9 @@ import com.inventory_service.Entities.Reservation;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Mapper(componentModel = "spring")
 public interface ReservationMapper {
 
@@ -19,5 +22,17 @@ public interface ReservationMapper {
 
     @Mapping(source = "id",target = "reservationId")
     @Mapping(source = "inventory.id",target = "inventoryId")
+    @Mapping(source = "inventory.productId",target = "productId")
     ReservationResponse toResponse(Reservation reservation);
+
+
+    default List<ReservationResponse> toReservationList(List<Reservation> reservations){
+        if(reservations == null || reservations.isEmpty()){
+            return new ArrayList<>();
+        }
+
+        return reservations.stream()
+                .map(this::toResponse)
+                .toList();
+    }
 }

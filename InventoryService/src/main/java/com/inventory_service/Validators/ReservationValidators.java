@@ -4,6 +4,8 @@ import com.inventory_service.Enums.ReservationStatus;
 import com.inventory_service.Repository.InventoryRepository;
 import com.inventory_service.Repository.ReservationRepository;
 import com.inventory_service.Services.InventoryService;
+import com.shared_library.Exceptions.BusinessInvalidException;
+import com.shared_library.Exceptions.InsufficientStockException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +21,7 @@ public class ReservationValidators {
     public void validateStockAvailability(Long productId, Long requestedQuantity){
         long available = inventoryRepository.getAvailableQuantity(productId, LocalDateTime.now());
         if(available < requestedQuantity){
-            throw new IllegalStateException(String.format(
+            throw new InsufficientStockException(String.format(
                     "Insufficient stock. Requested: %d,Available: %d",
                     requestedQuantity,available
             ));
@@ -32,7 +34,7 @@ public class ReservationValidators {
                 .existsByUserIdAndProductIdAndStatus(
                         userId, productId, ReservationStatus.ACTIVE);
         if (exists) {
-            throw new IllegalStateException(String.format("Active reservation for product %d already exists.",productId));
+            throw new BusinessInvalidException(String.format("Active reservation for product %d already exists.",productId));
         }
     }
 
