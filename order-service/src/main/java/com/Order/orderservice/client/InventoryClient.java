@@ -2,6 +2,7 @@ package com.Order.orderservice.client;
 
 import com.Order.orderservice.DTOs.ReservationDTO.ReservationRequest;
 import com.Order.orderservice.DTOs.ReservationDTO.ReservationResponse;
+import com.Order.orderservice.fallback.InventoryClientFallback;
 import com.shared_library.Config.FeignConfig;
 import jakarta.validation.Valid;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -9,7 +10,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@FeignClient(name = "inventory-service",configuration = FeignConfig.class)
+@FeignClient(name = "inventory-service",
+        configuration = FeignConfig.class,
+        fallback = InventoryClientFallback.class
+)
 public interface InventoryClient {
 
 //    @GetMapping("/api/inventory/product/{productId}")

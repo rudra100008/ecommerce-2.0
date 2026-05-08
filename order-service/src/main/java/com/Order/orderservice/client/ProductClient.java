@@ -2,6 +2,7 @@ package com.Order.orderservice.client;
 
 import com.Order.orderservice.DTOs.Product.ProductResponse;
 
+import com.Order.orderservice.fallback.ProductClientFallback;
 import com.shared_library.Config.FeignConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,7 +13,8 @@ import java.util.List;
 
 @FeignClient(
         name = "product-service",
-        configuration = FeignConfig.class
+        configuration = FeignConfig.class,
+        fallback = ProductClientFallback.class
 )
 public interface ProductClient {
 
