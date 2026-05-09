@@ -18,7 +18,10 @@ import com.Order.orderservice.Services.CartService;
 import com.Order.orderservice.client.InventoryClient;
 import com.Order.orderservice.client.ProductClient;
 import com.shared_library.Exceptions.BusinessInvalidException;
+import com.shared_library.Exceptions.RateLimitExceededException;
 import com.shared_library.Exceptions.ResourceNotFoundException;
+import io.github.resilience4j.ratelimiter.RequestNotPermitted;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -59,6 +62,7 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Transactional
+    @RateLimiter(name="cartOperations",fallbackMethod = "addToCartRateLimiterFallback")
     public CartResponse addToCart(Long userId, CartItemRequest request) {
         Cart cart = cartRepository.findByUserIdWithLock(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -111,6 +115,7 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Transactional
+    @RateLimiter(name="cartOperations",fallbackMethod = "removeFromCartRateLimiterFallback")
     public CartResponse removeFromCart(Long userId, Long cartItemId) {
         Cart cart = cartRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -177,5 +182,22 @@ public class CartServiceImpl implements CartService {
 
         List<CartItemResponse> cartItemResponseList = this.cartItemMapper.toCartItemResponseList(cart.getCartItems());
         return this.cartMapper.toResponse(cart,cartItemResponseList);
+    }
+
+    // ============= FALLBACK METHOD ============
+
+
+    public CartResponse addToCartRateLimitFallback(
+            Long userId,
+            CartItemRequest request,
+            RequestNotPermitted e) {
+        log.warn("Rate limit exceed for addToCart");
+        throw new RateLimitExceededException("" +
+                "Too many requests.Please slow down");
+    }
+    public CartResponse removeFromCartRateLimiterFallback(Long userId, Long cartItemId, RequestNotPermitted e) {
+        log.warn("Rate limit exceeded for removeFromCart");
+        throw new RateLimitExceededException("" +
+                "Too many requests. Please slow down");
     }
 }

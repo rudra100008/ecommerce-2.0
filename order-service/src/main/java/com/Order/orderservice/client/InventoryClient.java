@@ -2,7 +2,7 @@ package com.Order.orderservice.client;
 
 import com.Order.orderservice.DTOs.ReservationDTO.ReservationRequest;
 import com.Order.orderservice.DTOs.ReservationDTO.ReservationResponse;
-import com.Order.orderservice.fallback.InventoryClientFallback;
+import com.Order.orderservice.fallback.InventoryClientFallbackFactory;
 import com.shared_library.Config.FeignConfig;
 import jakarta.validation.Valid;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -12,12 +12,10 @@ import java.util.List;
 
 @FeignClient(name = "inventory-service",
         configuration = FeignConfig.class,
-        fallback = InventoryClientFallback.class
+        fallbackFactory = InventoryClientFallbackFactory.class
 )
 public interface InventoryClient {
 
-//    @GetMapping("/api/inventory/product/{productId}")
-//    InventoryResponse fetchByProductId(@PathVariable Long productId);
 
 
     @PostMapping("/api/inventory/reservation/create")

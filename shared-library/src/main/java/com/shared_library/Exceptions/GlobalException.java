@@ -2,6 +2,7 @@ package com.shared_library.Exceptions;
 
 
 import com.shared_library.Error.ApiErrorResponse;
+import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -102,6 +103,42 @@ public class GlobalException {
                 HttpStatus.BAD_REQUEST,
                 e.getMessage(),
                 request);
+    }
+    @ExceptionHandler(ServiceNotFoundException.class)
+    public ResponseEntity<?> handleServiceNotFoundException(ServiceNotFoundException e, WebRequest request) {
+        return errorResponse(
+                HttpStatus.BAD_REQUEST,
+                e.getMessage(),
+                request);
+    }
+    @ExceptionHandler(RateLimitExceededException.class)
+    public ResponseEntity<ApiErrorResponse> handleRateLimit(
+            RateLimitExceededException ex,WebRequest request) {
+        return ResponseEntity
+                .status(HttpStatus.TOO_MANY_REQUESTS) // 429
+                .header("Retry-After", "1")           // tell client to retry after 1 second
+                .body(new ApiErrorResponse(
+                        LocalDateTime.now(),
+                        HttpStatus.TOO_MANY_REQUESTS.value(),
+                        HttpStatus.TOO_MANY_REQUESTS.getReasonPhrase(),
+                        ex.getMessage(),
+                        request.getDescription(false)
+                ));
+    }
+
+    @ExceptionHandler(RequestNotPermitted.class)
+    public ResponseEntity<ApiErrorResponse> handleRequestNotPermitted(
+            RequestNotPermitted ex,WebRequest request) {
+        return ResponseEntity
+                .status(HttpStatus.TOO_MANY_REQUESTS)
+                .header("Retry-After", "1")
+                .body(new ApiErrorResponse(
+                        LocalDateTime.now(),
+                        HttpStatus.TOO_MANY_REQUESTS.value(),
+                        HttpStatus.TOO_MANY_REQUESTS.getReasonPhrase(),
+                        "Too many requests.Please try again later.",
+                        request.getDescription(false)
+                ));
     }
 
 

@@ -20,7 +20,10 @@ import com.Order.orderservice.Services.OrderService;
 import com.Order.orderservice.client.InventoryClient;
 import com.Order.orderservice.client.ProductClient;
 import com.shared_library.Exceptions.BusinessInvalidException;
+import com.shared_library.Exceptions.RateLimitExceededException;
 import com.shared_library.Exceptions.ResourceNotFoundException;
+import io.github.resilience4j.ratelimiter.RequestNotPermitted;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -45,6 +48,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
+    @RateLimiter(name = "createOrder",fallbackMethod = "createOrderRateLimiterFallback")
     public OrderResponse createOrder(OrderRequest request) {
         if (orderRepository.existsByUserIdAndStatus(request.userId(), OrderStatus.DRAFT)) {
             throw new BusinessInvalidException(
@@ -112,6 +116,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
+    @RateLimiter(name = "orderRead",fallbackMethod = "getOrderRateLimiterFallback")
     public OrderResponse getOrderById(Long orderId, Long userId) {
         Order order = this.orderRepository.findByIdAndUserIdWithDraftStatus(orderId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
@@ -128,6 +133,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
+    @RateLimiter(name = "createOrder",fallbackMethod = "cancelOrderRateLimitFallback")
     public void cancelOrder(Long orderId, Long userId) {
         Order order = this.orderRepository.findByIdAndUserIdWithDraftStatus(orderId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found."));
@@ -150,6 +156,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
+    @RateLimiter(name = "confirmOrder",fallbackMethod = "confirmOrderRateLimiterFallback")
     public OrderResponse confirmOrder(Long orderId, Long userId) {
         Order order = this.orderRepository.findByIdAndUserIdWithDraftStatus(orderId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order with status DRAFT not found..."));
@@ -161,10 +168,15 @@ public class OrderServiceImpl implements OrderService {
         try {
             // This should FAIL if inventory is insufficient or service is down
             inventoryClient.convertReservations(userId, productIds);
-        } catch (Exception e) {
+        }catch (BusinessInvalidException e){
+            log.error("Business error converting reservations for orderId: {}. Cause: {}",
+                    orderId, e.getMessage());
+            throw e;
+        }
+        catch (Exception e) {
             // Order remains DRAFT - safe to retry
             log.error("Failed to convert reservations, keeping order in DRAFT: {}", orderId);
-            throw new BusinessInvalidException("Order confirmation failed. Inventory deduction unsuccessful. Please try again.");
+            throw new BusinessInvalidException("Order confirmation failed. Please try again.");
         }
 
         // Step 2: Only update order status AFTER inventory is successfully deducted
@@ -253,6 +265,47 @@ public class OrderServiceImpl implements OrderService {
 
 
     // =========== FALLBACK METHOD ==============
+
+    public OrderResponse createOrderRateLimiterFallback(OrderRequest request, RequestNotPermitted e){
+        log.warn("Rate limiter exceeded for createOrder.userId:{}",request.userId());
+
+        throw new RateLimitExceededException(
+                "Too many order requests.Please wait a moment and try again."
+        );
+    }
+
+    public OrderResponse confirmOrderRateLimitFallback(
+            Long orderId,
+            Long userId,
+            RequestNotPermitted e) {
+        log.warn("Rate limit exceeded for confirmOrder. orderId: {}", orderId);
+        throw new RateLimitExceededException(
+                "Too many requests. Please wait a moment and try again."
+        );
+    }
+
+
+
+    public OrderResponse getOrderRateLimitFallback(
+            Long orderId,
+            Long userId,
+            RequestNotPermitted e) {
+        log.warn("Rate limit exceeded for getOrderById. orderId: {}", orderId);
+        throw new RateLimitExceededException(
+                "Too many requests. Please slow down."
+        );
+    }
+
+    public void cancelOrderRateLimitFallback(
+            Long orderId,
+            Long userId,
+            RequestNotPermitted e) {
+        log.warn("Rate limit exceeded for cancelOrder. orderId: {}", orderId);
+        throw new RateLimitExceededException(
+                "Too many requests. Please wait a moment and try again."
+        );
+    }
+
 
 
 }
