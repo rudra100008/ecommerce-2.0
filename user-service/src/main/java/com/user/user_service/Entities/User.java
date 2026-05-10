@@ -1,8 +1,13 @@
 package com.user.user_service.Entities;
 
+import com.user.user_service.Enums.AuthProvider;
+import com.user.user_service.Enums.RoleStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -29,7 +34,7 @@ public class User {
     @Column(nullable = false,unique = true)
     private String email;
 
-    @Column(nullable = false,length = 255)
+    @Column(length = 255)
     private String password;
 
 
@@ -37,26 +42,40 @@ public class User {
 
     private String phoneNumber;
 
-    private String imageUrl; // both for Google image and cloud image
+    private String imageUrl; // both for G  oogle image and cloud image
 
     private String publicId;
 
+    @Column(nullable = false)
     private Boolean imageCustomized; // to  check if user logged in through Google updated image like google image to another image
 
-
-    @ManyToMany
-    @JoinTable(
-            name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
-    )
+    @Column(nullable = false)
     @Builder.Default
-    private Set<Role> roles = new HashSet<>();
+    private Boolean active = true;
 
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private RoleStatus role = RoleStatus.ROLE_CUSTOMER;
+
+    private String providerId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private AuthProvider provider = AuthProvider.LOCAL;
 
     @OneToMany(mappedBy = "user",orphanRemoval = true,cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     @Builder.Default
     private List<Address> addresses = new ArrayList<>();
+
+
+    @CreationTimestamp
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
 
 
     public void addAddress(Address address){
