@@ -1,55 +1,59 @@
-package com.user.user_service.Security;
+package com.shared_library.Utils;
 
-import com.user.user_service.Entities.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
-import java.util.Base64;
 import java.util.Date;
 import java.util.function.Function;
 
-@ConfigurationProperties(prefix = "jwt")
 @Component
 @Getter
 @Setter
 public class JwtUtils {
+    @Value("${jwt.secret}")
     private String secret;
 
-    // maps to jwt.expires
-    private Long expires;
+    @Value("${jwt.expiration-ms}")
+    private Long expirationMs;
 
-    // maps to jwt.refresh-expiration-ms
+    @Value("${jwt.refresh-expiration-ms}")
     private Long refreshExpirationMs;
 
 
-    public String generateToken(User user){
+
+    public String generateToken(Long userId, String email, String role,
+                                String provider) {
         return Jwts.builder()
-                .subject(user.getEmail())
-                .claim("userId",user.getId())
-                .claim("role",user.getRole().name())
-                .claim("provider",user.getProvider().name())
+                .subject(email)
+                .claim("userId", userId)
+                .claim("role", role)
+                .claim("provider", provider)
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + expires))
+                .expiration(new Date(
+                        System.currentTimeMillis() + expirationMs))
                 .signWith(getSigningKey())
                 .compact();
     }
 
-    public String refreshToken(User user){
+    // ✅ user-service uses this — generate refresh token
+    public String generateRefreshToken(String email) {
         return Jwts.builder()
-                .subject(user.getEmail())
-                .claim("type","refresh")
+                .subject(email)
+                .claim("type", "refresh")
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + refreshExpirationMs))
+                .expiration(new Date(
+                        System.currentTimeMillis() + refreshExpirationMs))
                 .signWith(getSigningKey())
                 .compact();
     }
+
 
     public Claims validateToken(String token){
         return Jwts.parser()
