@@ -2,11 +2,14 @@ package com.shared_library.Exceptions;
 
 
 import com.shared_library.Error.ApiErrorResponse;
+import feign.Response;
 import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
@@ -35,7 +38,7 @@ public class GlobalException {
         log.error("Unexpected error",e);
         return errorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
-                "An unexpected error occurred: " + e.getMessage(),
+                "Something went wrong" ,
                 request);
     }
 
@@ -146,8 +149,6 @@ public class GlobalException {
     public ResponseEntity<?> handleIOException(IOException e, WebRequest request) {
         return errorResponse(HttpStatus.BAD_REQUEST, e.getMessage(), request);
     }
-
-
 
 //    // GlobalExceptionHandler
 //    @ExceptionHandler(DataIntegrityViolationException.class)

@@ -77,7 +77,11 @@ public class AuthServiceImpl implements AuthService {
                     "This account uses Google login. Please sign in with google"
             );
         }
-        if(!user.getActive()){
+        if(!passwordEncoder.matches(request.password(), user.getPassword())){
+            throw new BusinessInvalidException("Invalid email or password");
+        }
+
+        if(Boolean.FALSE.equals(user.getActive())){
             throw new BusinessInvalidException("Account is deactivated.");
         }
         String accessToken = jwtUtils.generateToken(

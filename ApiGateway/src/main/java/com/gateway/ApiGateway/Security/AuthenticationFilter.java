@@ -11,10 +11,12 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import java.nio.charset.StandardCharsets;
@@ -25,13 +27,14 @@ import java.util.List;
 @Slf4j
 public class AuthenticationFilter implements GlobalFilter, Ordered {
     private final JwtUtils jwtUtils;
+    private final AntPathMatcher antPathMatcher;
     @Value("${internal.secret-key}")
-    private final String  internalSecretKey;
+    private String  internalSecretKey;
 
     private static final List<String> PUBLIC_PATHS = List.of(
-            "/api/auth/",
-            "/oauth2/",
-            "/login/oauth2/"
+            "/api/auth/**",
+            "/oauth2/**",
+            "/login/oauth2/**"
     );
     @Override
     public int getOrder() {
@@ -46,39 +49,40 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange);
         }
 
-        String authHeader = exchange.getRequest()
-                .getHeaders()
-                .getFirst(HttpHeaders.AUTHORIZATION);
-
-        if(authHeader == null || !authHeader.startsWith("Bearer ")){
-            return buildErrorResponse(
-                    exchange,
-                    HttpStatus.UNAUTHORIZED,
-                    "Missing token"
-            );
+       String token = extractToken(exchange);
+        if(token == null){
+            return buildErrorResponse(exchange,HttpStatus.UNAUTHORIZED,"Missing token");
         }
         try{
-            Claims claims = jwtUtils.validateToken(authHeader.substring(7));
+            Claims claims = jwtUtils.validateToken(token);
 
             ServerHttpRequest modified = exchange.getRequest()
                     .mutate()
-                    .header("X-User-Id",claims.get("userId").toString())
-                    .header("X-User-Role",claims.get("role").toString())
+                    .headers(headers -> {
+                        headers.remove("X-User-Id");
+                        headers.remove("X-User-Role");
+                        headers.remove("X-User-Email");
+                        headers.remove("X-Internal-Secret");
+                        headers.remove(HttpHeaders.AUTHORIZATION);
+                    })
+                    .header("X-User-Id",String.valueOf( claims.get("userId")))
+                    .header("X-User-Role",String.valueOf(claims.get("role")))
                     .header("X-User-Email",claims.getSubject())
                     .header("X-Internal-Secret",internalSecretKey)
-                    .headers(h -> h.remove(HttpHeaders.AUTHORIZATION))
                     .build();
 
             return chain.filter(
                     exchange.mutate().request(modified).build()
             );
         }catch (ExpiredJwtException e){
+            log.error("Token expired:{}",e.getMessage());
             return buildErrorResponse(
                     exchange,
                     HttpStatus.UNAUTHORIZED,
                     "Token expired"
             );
         }catch (Exception e){
+            log.error("Token validation failed:{}",e.getMessage(),e);
             return buildErrorResponse(
                     exchange,
                     HttpStatus.UNAUTHORIZED,
@@ -89,9 +93,23 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
 
 
     private boolean isPublic(String path) {
-        return PUBLIC_PATHS.stream().anyMatch(path::startsWith);
+        return PUBLIC_PATHS.stream()
+                .anyMatch(p -> antPathMatcher.match(p,path));
     }
+    private String extractToken(ServerWebExchange exchange){
+        HttpCookie accessCookie  = exchange.getRequest().getCookies().getFirst("accessToken");
+        if(accessCookie != null && !accessCookie.getValue().isEmpty()){
+            log.info("token fetched from cookies:{}",accessCookie.getValue());
+            return accessCookie.getValue();
+        }
 
+        String authHeader = exchange.getRequest().getHeaders().getFirst(org.springframework.http.HttpHeaders.AUTHORIZATION);
+        if(authHeader != null && !authHeader.isEmpty()){
+            log.info("Token fetched from Authorization header");
+            return authHeader.substring(7);
+        }
+        return null;
+    }
     private Mono<Void> buildErrorResponse(
             ServerWebExchange exchange,
             HttpStatus status,

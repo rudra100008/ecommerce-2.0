@@ -1,5 +1,6 @@
-package com.user.user_service.SecurityConfig;
+package com.user.user_service.Config;
 
+import com.user.user_service.SecurityConfig.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +14,11 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -40,7 +46,7 @@ public class SecurityConfig {
         return http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/auth/oauth2/**").permitAll()
@@ -60,7 +66,19 @@ public class SecurityConfig {
                         .failureHandler(oAuth2FailureHandler))
                 .build();
     }
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource(){
+        CorsConfiguration cors = new CorsConfiguration();
+        cors.setAllowedOrigins(List.of("*"));
+        cors.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
+        cors.setAllowedHeaders(List.of("Authorization","Content-Type","Accept"));
+        cors.setExposedHeaders(List.of("Set-Cookies","Authorization","X-XSRF-TOKEN"));
+        cors.setAllowCredentials(true); // for cookies
 
+        UrlBasedCorsConfigurationSource url  = new UrlBasedCorsConfigurationSource();
+        url.registerCorsConfiguration("/**",cors);
+        return url;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder(){

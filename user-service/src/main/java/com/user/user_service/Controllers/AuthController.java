@@ -13,7 +13,6 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -29,6 +28,7 @@ public class AuthController {
             @Valid @RequestBody RegisterRequest registerRequest
     ){
         AuthResponse authResponse = this.authService.register(registerRequest);
+
         ResponseCookie accessCookie = ResponseCookie.from("accessToken", authResponse.accessToken())
                 .httpOnly(true)
                 .secure(false)// for deployment
@@ -36,7 +36,7 @@ public class AuthController {
                 .path("/")
                 .maxAge(24 * 60 * 60)
                 .build();
-        ResponseCookie refreshCookie = ResponseCookie.from("refreshCookie",authResponse.refreshToken())
+        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken",authResponse.refreshToken())
                 .httpOnly(true)
                 .secure(false)// for deployment
                 .sameSite("Lax")
@@ -70,7 +70,7 @@ public class AuthController {
                 .path("/")
                 .maxAge(24 * 60 * 60)
                 .build();
-        ResponseCookie refreshCookie = ResponseCookie.from("refreshCookie",authResponse.refreshToken())
+        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken",authResponse.refreshToken())
                 .httpOnly(true)
                 .secure(false)// for deployment
                 .sameSite("Lax")
@@ -86,7 +86,7 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<AuthResponse> refresh(
-            @RequestHeader("Refresh-Token") String refreshToken) {
+            @CookieValue("refreshToken") String refreshToken) {
         return ResponseEntity.ok(authService.refresh(refreshToken));
     }
 }

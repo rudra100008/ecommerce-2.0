@@ -7,7 +7,6 @@ import com.user.user_service.Enums.RoleStatus;
 import com.user.user_service.Repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -63,7 +62,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                 .path("/")
                 .maxAge(24 * 60 * 60)
                 .build();
-        ResponseCookie refreshCookie = ResponseCookie.from("refreshCookie", refreshToken)
+        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
                 .secure(false)// for deployment
                 .sameSite("Lax")
