@@ -84,7 +84,7 @@ public class JwtUtils {
     }
 
     public boolean isTokenValid(String token){
-        return validateToken(token).getExpiration().before(new Date());
+        return validateToken(token).getExpiration().after(new Date());
     }
     private SecretKey getSigningKey(){
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));

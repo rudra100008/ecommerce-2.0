@@ -3,6 +3,7 @@ package com.user.user_service.Controllers;
 import com.user.user_service.DTOs.AuthDTO.AuthResponse;
 import com.user.user_service.DTOs.AuthDTO.LoginRequest;
 import com.user.user_service.DTOs.AuthDTO.RegisterRequest;
+import com.user.user_service.Entities.User;
 import com.user.user_service.Services.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -56,13 +58,15 @@ public class AuthController {
             @Valid @RequestBody LoginRequest loginRequest
     ){
 
-        this.authenticationManager.authenticate(
+        Authentication authentication = this.authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.email(),
                         loginRequest.password()
                 )
         );
-        AuthResponse authResponse = this.authService.login(loginRequest);
+        User user = (User) authentication.getPrincipal();
+
+        AuthResponse authResponse = this.authService.login(user);
         ResponseCookie accessCookie = ResponseCookie.from("accessToken", authResponse.accessToken())
                 .httpOnly(true)
                 .secure(false)// for deployment

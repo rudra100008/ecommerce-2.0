@@ -67,18 +67,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public AuthResponse login(LoginRequest request) {
-        User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new BusinessInvalidException(
-                        "Invalid email or password"
-                ));
+    public AuthResponse login(User user) {
         if(user.getProvider() == AuthProvider.GOOGLE){
             throw new BusinessInvalidException(
                     "This account uses Google login. Please sign in with google"
             );
-        }
-        if(!passwordEncoder.matches(request.password(), user.getPassword())){
-            throw new BusinessInvalidException("Invalid email or password");
         }
 
         if(Boolean.FALSE.equals(user.getActive())){

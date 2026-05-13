@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.util.UUID;
 
 @Component
 @Slf4j
@@ -90,10 +91,15 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             String email, String name,
             String imageUrl, String googleId
     ) {
+
+        String base = email.split("@")[0];
+        String username = userRepository.existsByUsername(base)
+                ? base + "_" + UUID.randomUUID().toString().substring(0,8)
+                : base;
         User newUser = User.builder()
                 .email(email)
                 .fullName(name)
-                .username(email.split("@")[0])
+                .username(username)
                 .imageUrl(imageUrl)
                 .providerId(googleId)
                 .provider(AuthProvider.GOOGLE)

@@ -25,10 +25,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final CustomUserDetailService userDetailService;
-    private final CustomAccessDeniedHandler accessDeniedHandler;
-    private final CustomAuthenticationEntryPoint entryPoint;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
     private final OAuth2FailureHandler oAuth2FailureHandler;
+    private final AuthExceptionHandler authExceptionHandler;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration){
@@ -56,9 +55,8 @@ public class SecurityConfig {
                 )
                 .authenticationProvider(authenticationProvider())
                 .exceptionHandling(ex -> ex
-                        .accessDeniedHandler(accessDeniedHandler)
-                        .authenticationEntryPoint(entryPoint
-                        ))
+                        .accessDeniedHandler(authExceptionHandler)
+                        .authenticationEntryPoint(authExceptionHandler))
                 .oauth2Login(oauth2 -> oauth2
                         .redirectionEndpoint(endpoint -> endpoint
                                 .baseUri("/api/auth/oauth2/callback/*"))
@@ -69,10 +67,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration cors = new CorsConfiguration();
-        cors.setAllowedOrigins(List.of("*"));
+        cors.setAllowedOrigins(List.of("http://localhost:3000"));
         cors.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
         cors.setAllowedHeaders(List.of("Authorization","Content-Type","Accept"));
-        cors.setExposedHeaders(List.of("Set-Cookies","Authorization","X-XSRF-TOKEN"));
+        cors.setExposedHeaders(List.of("Set-Cookie","Authorization","X-XSRF-TOKEN"));
         cors.setAllowCredentials(true); // for cookies
 
         UrlBasedCorsConfigurationSource url  = new UrlBasedCorsConfigurationSource();
