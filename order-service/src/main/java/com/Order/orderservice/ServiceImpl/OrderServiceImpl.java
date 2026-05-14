@@ -69,7 +69,7 @@ public class OrderServiceImpl implements OrderService {
                 .map(OrderItemRequest::productId)
                 .toList();
 
-        List<ReservationResponse> reservationResponses = inventoryClient.validateActiveReservation(request.userId(), productIds);
+        List<ReservationResponse> reservationResponses = inventoryClient.validateActiveReservation(productIds);
 
         // this verifies the quantity of orderItemRequest in orderRequest and Reservation using productId
         verifyQuantity(reservationResponses, request.orderItems());
@@ -142,7 +142,7 @@ public class OrderServiceImpl implements OrderService {
                 .map(OrderItem::getProductId)
                 .toList();
         if (!productIds.isEmpty()) {
-            inventoryClient.releaseAllReservation(userId, productIds);
+            inventoryClient.releaseAllReservation(productIds);
         }
 
         this.orderRepository.delete(order);
@@ -167,7 +167,7 @@ public class OrderServiceImpl implements OrderService {
 
         try {
             // This should FAIL if inventory is insufficient or service is down
-            inventoryClient.convertReservations(userId, productIds);
+            inventoryClient.convertReservations(productIds);
         }catch (BusinessInvalidException e){
             log.error("Business error converting reservations for orderId: {}. Cause: {}",
                     orderId, e.getMessage());

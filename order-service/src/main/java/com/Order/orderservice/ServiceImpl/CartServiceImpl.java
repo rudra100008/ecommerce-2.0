@@ -129,7 +129,7 @@ public class CartServiceImpl implements CartService {
 
 
         try {
-            inventoryClient.deleteReservation(userId, item.getProductId());
+            inventoryClient.deleteReservation(item.getProductId());
         } catch (Exception e) {
             // Unknown error
             log.error("Unexpected error releasing reservation", e);
@@ -152,7 +152,7 @@ public class CartServiceImpl implements CartService {
                         new ResourceNotFoundException("Cart not found"));
         cart.getCartItems().forEach(item -> {
             try {
-                inventoryClient.deleteReservation(userId, item.getProductId());
+                inventoryClient.deleteReservation(item.getProductId());
             } catch (Exception e) {
                 log.warn("Failed to release reservation for productId: {}",
                         item.getProductId());

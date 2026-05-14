@@ -36,7 +36,7 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     @Transactional
-    public ReservationResponse createReservation(ReservationRequest request) {
+    public ReservationResponse createReservation(ReservationRequest request,Long userId) {
 
         Inventory inventory = this.inventoryRepository.findByProductIdWithLock(request.productId())
                 .orElseThrow(()-> new ResourceNotFoundException("Inventory not found"));
@@ -55,12 +55,12 @@ public class ReservationServiceImpl implements ReservationService {
 
         boolean exists = reservationRepository
                 .existsByUserIdAndProductIdAndStatus(
-                        request.userId(), request.productId(), ReservationStatus.ACTIVE);
+                        userId, request.productId(), ReservationStatus.ACTIVE);
         if (exists) {
             throw new BusinessInvalidException(String.format("Active reservation for product %d already exists.",request.productId()));
         }
 
-        Reservation reservation = reservationHelper.buildReservation(request,inventory);
+        Reservation reservation = reservationHelper.buildReservation(request,inventory,userId);
         Reservation saved = this.reservationRepository.save(reservation);
 
         return this.reservationMapper.toResponse(saved);
@@ -68,9 +68,9 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     @Transactional
-    public ReservationResponse updateReservationQuantity(ReservationRequest request) {
+    public ReservationResponse updateReservationQuantity(ReservationRequest request,Long userId) {
         Reservation reservation = reservationRepository.findByUserIdAndProductIdAndStatus(
-                request.userId(),
+                userId,
                 request.productId(),
                 ReservationStatus.ACTIVE
         ).orElseThrow(()-> new ResourceNotFoundException("Reservation not found"));

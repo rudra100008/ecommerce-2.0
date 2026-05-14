@@ -22,17 +22,17 @@ public class CartController {
     private final CartService cartService;
 
 
-    @PostMapping("/create/user/{userId}")
+    @PostMapping("/create")
     public ResponseEntity<?> createCart(
-            @PathVariable Long userId
+            @RequestHeader("X-User-Id") Long userId
     ){
         CartResponse cartResponse = this.cartService.createCart(userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(cartResponse);
     }
 
-    @PostMapping("/addToCart/user/{userId}")
+    @PostMapping("/addToCart")
     public ResponseEntity<?> addToCart(
-            @PathVariable Long userId,
+            @RequestHeader("X-User-Id") Long userId,
             @Valid @RequestBody CartItemRequest cartItemRequest,
             BindingResult result
     ){
@@ -47,9 +47,9 @@ public class CartController {
         return ResponseEntity.status(HttpStatus.OK).body(cartResponse);
     }
 
-    @DeleteMapping("/removeFromCart/user/{userId}/cartItem/{cartItemId}")
+    @DeleteMapping("/removeFromCart/cartItem/{cartItemId}")
     public ResponseEntity<?> removeFromCart(
-            @PathVariable Long userId,
+            @RequestHeader("X-User-Id") Long userId,
             @PathVariable Long cartItemId
     ){
         CartResponse cartResponse = this.cartService.removeFromCart(userId,cartItemId);
@@ -58,17 +58,17 @@ public class CartController {
     }
 
 
-    @DeleteMapping("/clear_cart/user/{userId}")
+    @DeleteMapping("/clear_cart")
     public ResponseEntity<?> clearCart(
-            @PathVariable Long userId
+            @RequestHeader("X-User-Id") Long userId
     ){
         this.cartService.clearCartByUserId(userId);
         return ResponseEntity.status(HttpStatus.OK).body("Cart cleared");
     }
 
-    @GetMapping("/fetch/user/{userId}")
+    @GetMapping("/fetch")
     public ResponseEntity<?> fetchCart(
-            @PathVariable Long userId
+            @RequestHeader("X-User-Id") Long userId
     ){
         CartResponse cartResponse = this.cartService.getCartByUserId(userId);
         return ResponseEntity.status(HttpStatus.OK).body(cartResponse);

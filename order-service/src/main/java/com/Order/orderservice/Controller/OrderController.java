@@ -38,28 +38,28 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(orderResponse);
     }
 
-    @GetMapping("/fetch/{id}/user/{userId}")
+    @GetMapping("/fetch/{id}")
     public ResponseEntity<?> fetchByIdAndUserId(
             @PathVariable Long id,
-            @PathVariable Long userId
+            @RequestHeader("X-User-Id") Long userId
     ){
         OrderResponse response = this.orderService.getOrderById(id,userId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @DeleteMapping("/cancel/{id}/user/{userId}")
+    @DeleteMapping("/cancel/{id}")
     public ResponseEntity<?> cancel(
             @PathVariable Long id,
-            @PathVariable Long userId
+            @RequestHeader("X-User-Id") Long userId
     ){
         this.orderService.cancelOrder(id,userId);
         return ResponseEntity.status(HttpStatus.OK).body("Order cancelled successfully.");
     }
 
-    @PutMapping("/confirm/{id}/user/{userId}")
+    @PutMapping("/confirm/{id}")
     public ResponseEntity<?> confirm(
             @PathVariable Long id,
-            @PathVariable Long userId
+            @RequestHeader("X-User-Id") Long userId
     ){
         OrderResponse orderResponse = this.orderService.confirmOrder(id,userId);
 

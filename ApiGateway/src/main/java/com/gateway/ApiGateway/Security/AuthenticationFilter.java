@@ -104,7 +104,7 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
         }
 
         String authHeader = exchange.getRequest().getHeaders().getFirst(org.springframework.http.HttpHeaders.AUTHORIZATION);
-        if(authHeader != null && !authHeader.isEmpty()){
+        if(authHeader != null && !authHeader.isEmpty() && authHeader.startsWith("Bearer ")){
             log.info("Token fetched from Authorization header");
             return authHeader.substring(7);
         }

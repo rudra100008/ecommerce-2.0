@@ -1,4 +1,4 @@
-package com.inventory_service.DTOs.Error;
+package com.shared_library.Error;
 
 public record ValidationErrorResponse(
         String field,

@@ -29,31 +29,30 @@ public class InventoryClientFallbackFactory implements FallbackFactory<Inventory
                 throw extractException(cause);
             }
             @Override
-            public void deleteReservation(Long userId, Long productId) {
+            public void deleteReservation( Long productId) {
                 // silent — reservation expires automatically
-                log.warn("deleteReservation failed for userId: {}, productId: {}. " +
-                        "Will expire automatically. Cause: {}", userId, productId, cause.getMessage());
+                log.warn("deleteReservation failed for user, productId: {}. " +
+                        "Will expire automatically. Cause: {}",productId, cause.getMessage());
             }
 
             @Override
-            public List<ReservationResponse> validateActiveReservation(
-                    Long userId, List<Long> productIds) {
+            public List<ReservationResponse> validateActiveReservation(List<Long> productIds) {
                 log.error("validateActiveReservation failed. Cause: {}", cause.getMessage());
                 throw extractException(cause);
             }
 
             @Override
-            public void convertReservations(Long userId, List<Long> productIds) {
-                log.error("convertReservations failed for userId: {}, productIds: {}. Cause: {}",
-                        userId, productIds, cause.getMessage());
+            public void convertReservations(List<Long> productIds) {
+                log.error("convertReservations failed for  productIds: {}. Cause: {}",
+                         productIds, cause.getMessage());
                 throw extractException(cause);
             }
 
             @Override
-            public void releaseAllReservation(Long userId, List<Long> productIds) {
+            public void releaseAllReservation( List<Long> productIds) {
                 // silent — reservations expire automatically
-                log.warn("releaseAllReservation failed for userId: {}. " +
-                        "Will expire automatically. Cause: {}", userId, cause.getMessage());
+                log.warn("releaseAllReservation failed for user. " +
+                        "Will expire automatically. Cause: {}", cause.getMessage());
             }
         };
     }

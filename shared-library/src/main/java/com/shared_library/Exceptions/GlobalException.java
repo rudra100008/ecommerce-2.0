@@ -2,6 +2,8 @@ package com.shared_library.Exceptions;
 
 
 import com.shared_library.Error.ApiErrorResponse;
+import com.shared_library.Error.ValidationErrorResponse;
+import com.shared_library.Error.ValidationErrors;
 import feign.Response;
 import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 import lombok.RequiredArgsConstructor;
@@ -10,12 +12,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Slf4j
 @RestControllerAdvice
@@ -71,7 +75,7 @@ public class GlobalException {
     @ExceptionHandler(AlreadyExistException.class)
     public ResponseEntity<?> handleAlreadyExistException(AlreadyExistException e, WebRequest request) {
         return errorResponse(
-                HttpStatus.BAD_REQUEST,
+                HttpStatus.CONFLICT,
                 e.getMessage(),
                 request);
     }
@@ -150,6 +154,19 @@ public class GlobalException {
         return errorResponse(HttpStatus.BAD_REQUEST, e.getMessage(), request);
     }
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<?> handleMethodArgumentNotValidException(MethodArgumentNotValidException e,WebRequest request)
+    {
+        List<ValidationErrorResponse> errors = e.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(f -> new ValidationErrorResponse(f.getField(),f.getDefaultMessage()))
+                .toList();
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ValidationErrors(errors));
+    }
 //    // GlobalExceptionHandler
 //    @ExceptionHandler(DataIntegrityViolationException.class)
 //    public ResponseEntity<?> handleDataIntegrity(DataIntegrityViolation e,WebRequest request) {

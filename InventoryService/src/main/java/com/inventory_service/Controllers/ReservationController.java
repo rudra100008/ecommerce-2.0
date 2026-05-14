@@ -1,7 +1,5 @@
 package com.inventory_service.Controllers;
 
-import com.inventory_service.DTOs.Error.ValidationErrorResponse;
-import com.inventory_service.DTOs.Error.ValidationErrors;
 import com.inventory_service.DTOs.ReservationDTO.ReservationRequest;
 import com.inventory_service.DTOs.ReservationDTO.ReservationResponse;
 import com.inventory_service.Services.ReservationService;
@@ -9,10 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -26,49 +21,33 @@ public class ReservationController {
 
     @PostMapping("/create")
     public ResponseEntity<?> createReservation(
-             @Valid  @RequestBody ReservationRequest request,
-             BindingResult result
-            ){
-        if(result.hasErrors()){
-            List<ValidationErrorResponse> errorResponses = new ArrayList<>();
-            result.getFieldErrors()
-                    .forEach(f ->
-                    errorResponses.add(new ValidationErrorResponse(f.getField(),f.getDefaultMessage()))
-            );
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ValidationErrors(errorResponses));
-        }
-        ReservationResponse response =  this.reservationService.createReservation(request);
+            @RequestHeader("X-User-Id") Long userId,
+             @Valid  @RequestBody ReservationRequest request
+    ){
+        ReservationResponse response =  this.reservationService.createReservation(request,userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("/update")
     public ResponseEntity<?> updateReservationQuantity(
-            @Valid @RequestBody ReservationRequest request,
-            BindingResult result
+            @RequestHeader("X-User-Id") Long userId,
+            @Valid @RequestBody ReservationRequest request
     ){
-        if(result.hasErrors()){
-            List<ValidationErrorResponse> errorResponses = new ArrayList<>();
-            result.getFieldErrors()
-                    .forEach(f ->
-                            errorResponses.add(new ValidationErrorResponse(f.getField(),f.getDefaultMessage()))
-                    );
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ValidationErrors(errorResponses));
-        }
-        ReservationResponse response = this.reservationService.updateReservationQuantity(request);
+        ReservationResponse response = this.reservationService.updateReservationQuantity(request,userId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PostMapping("/releaseReservation/user/{userId}")
+    @PostMapping("/releaseReservation")
     public ResponseEntity<?> releaseAllReservation(
-            @PathVariable Long userId,
+            @RequestHeader("X-User-Id") Long userId,
             @RequestParam("productIds") List<Long> productIds
     ){
         this.reservationService.releaseAllReservation(userId,productIds);
         return ResponseEntity.status(HttpStatus.OK).body("Reservation Deleted Successfully");
     }
-    @DeleteMapping("/delete/user/{userId}/product/{productId}")
+    @DeleteMapping("/delete/product/{productId}")
     public ResponseEntity<?> deleteReservation(
-            @PathVariable Long userId,
+            @RequestHeader("X-User-Id") Long userId,
             @PathVariable Long productId
     ){
         this.reservationService.deleteReservation(userId,productId);
@@ -86,9 +65,9 @@ public class ReservationController {
         ));
     }
 
-    @GetMapping("/fetch/user/{userId}/product/{productId}")
+    @GetMapping("/fetch/product/{productId}")
     public ResponseEntity<?> fetchByUserIdAndProductId(
-            @PathVariable Long userId,
+            @RequestHeader("X-User-Id") Long userId,
             @PathVariable Long productId
     ){
         ReservationResponse response = this.reservationService.fetchActiveByUserIdAndProductId(userId,productId);
@@ -96,18 +75,18 @@ public class ReservationController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @GetMapping("/validateReservation/user/{userId}")
+    @GetMapping("/validateReservation")
     public ResponseEntity<?> checkStatus(
-            @PathVariable Long userId,
+            @RequestHeader("X-User-Id") Long userId,
             @RequestParam("ids") List<Long> productIds
     ){
         List<ReservationResponse> responses = this.reservationService.validateReservation(userId,productIds);
         return ResponseEntity.status(HttpStatus.OK).body(responses);
     }
 
-    @PostMapping("/deductStock/user/{userId}")
+    @PostMapping("/deductStock")
     public ResponseEntity<?> convertReservation(
-            @PathVariable Long userId,
+            @RequestHeader("X-User-Id") Long userId,
             @RequestParam("productIds")List<Long> productIds
     ){
         this.reservationService.convertReservation(userId,productIds);

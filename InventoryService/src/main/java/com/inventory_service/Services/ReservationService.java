@@ -9,8 +9,8 @@ import java.util.List;
 @Service
 public interface ReservationService {
 
-    ReservationResponse createReservation(ReservationRequest request);
-    ReservationResponse updateReservationQuantity(ReservationRequest request);
+    ReservationResponse createReservation(ReservationRequest request,Long userId);
+    ReservationResponse updateReservationQuantity(ReservationRequest request,Long userId);
     void deleteReservation(Long userId, Long productId);
     void releaseAllReservation(Long userId,List<Long> productIds);
     Long getTotalReservationByProductId(Long productId);

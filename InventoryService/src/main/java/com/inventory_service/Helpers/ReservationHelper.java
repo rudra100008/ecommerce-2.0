@@ -15,11 +15,11 @@ import java.time.LocalDateTime;
 public class ReservationHelper {
     private final ReservationProperties properties;
 
-    public Reservation buildReservation(ReservationRequest request, Inventory inventory){
+    public Reservation buildReservation(ReservationRequest request, Inventory inventory,Long userId){
         LocalDateTime now = LocalDateTime.now();
         return Reservation.builder()
                 .inventory(inventory)
-                .userId(request.userId())
+                .userId(userId)
                 .reservedQuantity(request.reservedQuantity())
                 .reservedAt(now)
                 .expiresAt(now.plusMinutes(properties.expiryMinutes()))
