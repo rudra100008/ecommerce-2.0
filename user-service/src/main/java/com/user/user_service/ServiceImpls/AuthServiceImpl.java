@@ -4,19 +4,21 @@ import com.shared_library.Exceptions.BusinessInvalidException;
 import com.shared_library.Exceptions.ResourceNotFoundException;
 import com.shared_library.Utils.JwtUtils;
 import com.user.user_service.DTOs.AuthDTO.AuthResponse;
-import com.user.user_service.DTOs.AuthDTO.LoginRequest;
 import com.user.user_service.DTOs.AuthDTO.RegisterRequest;
+import com.user.user_service.DTOs.Media.MediaUploadResponse;
 import com.user.user_service.Entities.User;
 import com.user.user_service.Enums.AuthProvider;
 import com.user.user_service.Enums.RoleStatus;
 import com.user.user_service.Repository.UserRepository;
 import com.user.user_service.Services.AuthService;
+import com.user.user_service.client.MediaClient;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -25,17 +27,19 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
+    private final MediaClient mediaClient;
 
 
     @Override
     @Transactional
-    public AuthResponse register(RegisterRequest request) {
+    public AuthResponse register(RegisterRequest request, MultipartFile imageFile) {
         if(userRepository.existsByEmail(request.email())){
             throw new BusinessInvalidException("Email already registered.");
         }
         if(userRepository.existsByUsername(request.username())){
             throw  new BusinessInvalidException("Username already taken.");
         }
+        MediaUploadResponse uploadResponse = upload(imageFile);
 
         User user = User.builder()
                 .fullName(request.fullName())
@@ -46,6 +50,8 @@ public class AuthServiceImpl implements AuthService {
                 .active(true)
                 .provider(AuthProvider.LOCAL)
                 .imageCustomized(false)
+                .publicId(uploadResponse.publicId())
+                .imageUrl(uploadResponse.imageUrl())
                 .build();
         User saved = this.userRepository.save(user);
 
@@ -101,7 +107,7 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        if (!user.getActive()) {
+        if (Boolean.FALSE.equals(user.getActive())) {
             throw new BusinessInvalidException("Account is deactivated");
         }
 
@@ -115,5 +121,10 @@ public class AuthServiceImpl implements AuthService {
 
 
         return new AuthResponse(newToken, newRefreshToken, user.getRole().name(), user.getId());
+    }
+
+
+    private MediaUploadResponse upload(MultipartFile file){
+            return  this.mediaClient.uploadImage(file,"user");
     }
 }

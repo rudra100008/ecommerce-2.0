@@ -42,7 +42,7 @@ public class User implements UserDetails {
 
     private String phoneNumber;
 
-    private String imageUrl; // both for G  oogle image and cloud image
+    private String imageUrl; // both for Google image and cloud image
 
     private String publicId;
 

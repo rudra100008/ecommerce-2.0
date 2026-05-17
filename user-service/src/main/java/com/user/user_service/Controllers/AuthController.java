@@ -8,14 +8,12 @@ import com.user.user_service.Services.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,12 +22,13 @@ public class AuthController {
     private final AuthService authService;
     private final AuthenticationManager authenticationManager;
 
-    @PostMapping("/register")
+    @PostMapping(value = "/register",consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<?> register(
             HttpServletResponse response,
-            @Valid @RequestBody RegisterRequest registerRequest
+            @RequestPart("user") RegisterRequest registerRequest,
+            @RequestPart("image") MultipartFile imageFile
     ){
-        AuthResponse authResponse = this.authService.register(registerRequest);
+        AuthResponse authResponse = this.authService.register(registerRequest,imageFile);
 
         ResponseCookie accessCookie = ResponseCookie.from("accessToken", authResponse.accessToken())
                 .httpOnly(true)
