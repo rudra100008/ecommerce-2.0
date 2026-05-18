@@ -1,5 +1,6 @@
 package com.user.user_service.SecurityConfig;
 
+import com.user.user_service.Entities.CustomUserPrincipal;
 import com.user.user_service.Entities.User;
 import com.user.user_service.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,9 +21,16 @@ public class CustomUserDetailService implements UserDetailsService {
 
     @NotNull
     @Override
-    public User loadUserByUsername(@NotNull String email) throws UsernameNotFoundException {
-        return this.userRepository.findByEmail(email)
+    public CustomUserPrincipal loadUserByUsername(@NotNull String email) throws UsernameNotFoundException {
+         User user =this.userRepository.findByEmail(email)
                 .orElseThrow(()-> new UsernameNotFoundException(String.format("Email %s not found.",email)));
-
+         return new CustomUserPrincipal(
+                 user.getId(),
+                 user.getEmail(),
+                 user.getPassword(),
+                 user.getActive(),
+                 user.getRole(),
+                 user.getProvider()
+         );
     }
 }

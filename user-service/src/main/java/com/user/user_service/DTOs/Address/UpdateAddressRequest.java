@@ -1,6 +1,6 @@
 package com.user.user_service.DTOs.Address;
 
-public record AddressResponse(
+public record UpdateAddressRequest(
         Long addressId,
         String district,
         String province,

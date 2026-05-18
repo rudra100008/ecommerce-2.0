@@ -49,7 +49,7 @@ public class AuthServiceImpl implements AuthService {
                 .role(RoleStatus.ROLE_CUSTOMER)
                 .active(true)
                 .provider(AuthProvider.LOCAL)
-                .imageCustomized(false)
+                .imageCustomized(true)
                 .publicId(uploadResponse.publicId())
                 .imageUrl(uploadResponse.imageUrl())
                 .build();

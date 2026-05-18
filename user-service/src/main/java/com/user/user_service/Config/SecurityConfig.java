@@ -29,6 +29,7 @@ public class SecurityConfig {
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
     private final OAuth2FailureHandler oAuth2FailureHandler;
     private final AuthExceptionHandler authExceptionHandler;
+    private final CustomLogoutSuccessHandler logoutSuccessHandler;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration){
@@ -63,6 +64,11 @@ public class SecurityConfig {
                                 .baseUri("/api/auth/oauth2/callback/*"))
                         .successHandler(oAuth2SuccessHandler)
                         .failureHandler(oAuth2FailureHandler))
+                .logout(logout -> logout
+                        .logoutUrl("/api/auth/logout")
+                        .logoutSuccessHandler(logoutSuccessHandler)
+                        .deleteCookies("token")
+                        .permitAll())
                 .build();
     }
     @Bean

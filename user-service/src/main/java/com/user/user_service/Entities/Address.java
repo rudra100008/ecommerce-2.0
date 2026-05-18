@@ -15,7 +15,7 @@ public class Address {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
-    private Long addressId;
+    private Long id;
 
     @Column(nullable = false)
     private String district;
