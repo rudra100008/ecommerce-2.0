@@ -21,6 +21,7 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -36,6 +37,18 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
             "/oauth2/**",
             "/login/oauth2/**"
     );
+
+    private static final List<String> ADMIN_PATHS = List.of(
+            "/api/admin/**",
+            "/api/product/admin/**"
+    );
+
+    private static final List<String> ADMIN_ROLES = List.of(
+            "ROLE_ADMIN",
+            "ROLE_SUB_ADMIN"
+    );
+
+
     @Override
     public int getOrder() {
         return -1;
@@ -55,6 +68,14 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
         }
         try{
             Claims claims = jwtUtils.validateToken(token);
+            String role = jwtUtils.extractRole(token);
+            if(isAdminPath(path) && !isAdmin(role)){
+                return buildErrorResponse(
+                        exchange,
+                        HttpStatus.UNAUTHORIZED,
+                        "Access Denied. Admin privileges required."
+                );
+            }
 
             ServerHttpRequest modified = exchange.getRequest()
                     .mutate()
@@ -65,7 +86,7 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
                         headers.remove("X-Internal-Secret");
                         headers.remove(HttpHeaders.AUTHORIZATION);
                     })
-                    .header("X-User-Id",String.valueOf( claims.get("userId")))
+                    .header("X-User-Id",String.valueOf(claims.get("userId")))
                     .header("X-User-Role",String.valueOf(claims.get("role")))
                     .header("X-User-Email",claims.getSubject())
                     .header("X-Internal-Secret",internalSecretKey)
@@ -96,16 +117,23 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
         return PUBLIC_PATHS.stream()
                 .anyMatch(p -> antPathMatcher.match(p,path));
     }
+    private boolean isAdminPath(String path){
+        return ADMIN_PATHS.stream()
+                .anyMatch(a -> antPathMatcher.match(a,path));
+    }
+    private boolean isAdmin(String role){
+        return ADMIN_ROLES.contains(role);
+    }
     private String extractToken(ServerWebExchange exchange){
         HttpCookie accessCookie  = exchange.getRequest().getCookies().getFirst("accessToken");
         if(accessCookie != null && !accessCookie.getValue().isEmpty()){
-            log.info("token fetched from cookies:{}",accessCookie.getValue());
+            log.info("Token found in cookies");
             return accessCookie.getValue();
         }
 
         String authHeader = exchange.getRequest().getHeaders().getFirst(org.springframework.http.HttpHeaders.AUTHORIZATION);
-        if(authHeader != null && !authHeader.isEmpty() && authHeader.startsWith("Bearer ")){
-            log.info("Token fetched from Authorization header");
+        if(authHeader != null && authHeader.startsWith("Bearer ")){
+            log.info("Token found in Authorization header");
             return authHeader.substring(7);
         }
         return null;

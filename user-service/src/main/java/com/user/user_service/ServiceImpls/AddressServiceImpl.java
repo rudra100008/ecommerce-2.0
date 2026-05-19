@@ -31,8 +31,11 @@ public class AddressServiceImpl implements AddressService {
     private final UserMapper userMapper;
     private final AddressRepository addressRepository;
     private final AddressMapper addressMapper;
+
+
     @Override
-    public UserResponse add(Long userId, AddressRequest addressRequest) {
+    @Transactional
+    public AddressResponse add(Long userId, AddressRequest addressRequest) {
         Long authUserId = AuthUtil.getCustomUserPrincipal().getId();
         validateUser(authUserId,userId,"User is not allowed to add address.");
         User user = this.userRepository.findByIdWithAddresses(authUserId)
@@ -48,12 +51,13 @@ public class AddressServiceImpl implements AddressService {
                 .wardNumber(addressRequest.wardNumber())
                 .build();
         user.addAddress(address);
-        User saved = this.userRepository.save(user);
-        List<AddressResponse> addressResponseList = this.addressMapper.toAddressResponseList(saved.getAddresses());
-        return this.userMapper.toResponse(saved,addressResponseList);
+        this.userRepository.save(user);
+
+        return this.addressMapper.toResponse(address);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<AddressResponse> getAll(Long userId) {
         User user = this.userRepository.findById(userId)
                 .orElseThrow(()-> new ResourceNotFoundException("User not found."));

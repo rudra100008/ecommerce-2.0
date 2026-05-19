@@ -11,8 +11,6 @@ import jakarta.validation.constraints.Pattern;
 import java.util.List;
 
 public record OrderRequest(
-        @NotNull(message = "User ID is required")
-        Long userId,
         @NotBlank(message = "Full name is required")
         String fullName,
 

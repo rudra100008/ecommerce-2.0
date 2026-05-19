@@ -4,10 +4,7 @@ import com.product.product_service.Constants.PageConstant;
 import com.product.product_service.DTOs.ApiErrorResponse;
 import com.product.product_service.DTOs.Category.CategoryRequest;
 import com.product.product_service.DTOs.PageInfo;
-import com.product.product_service.DTOs.Product.ProductRequest;
-import com.product.product_service.DTOs.Product.ProductResponse;
-import com.product.product_service.DTOs.Product.ProductDTO;
-import com.product.product_service.DTOs.Product.ProductWithImageAndCategory;
+import com.product.product_service.DTOs.Product.*;
 import com.product.product_service.Services.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -56,6 +53,33 @@ public class ProductController {
         return  ResponseEntity.status(HttpStatus.OK).body(products);
     }
 
+    @GetMapping("/category/{categoryId}")
+    public ResponseEntity<?> fetchAllByCategoryId(
+            @PathVariable Long categoryId,
+            @RequestParam(required = false, defaultValue = PageConstant.PAGE_NUMBER)Integer pageNumber,
+            @RequestParam(required = false,defaultValue = PageConstant.PAGE_SIZE)Integer pageSize,
+            @RequestParam(required = false,defaultValue = PageConstant.SORT_BY) String sortBy,
+            @RequestParam(required = false,defaultValue = PageConstant.SORT_DIR)String sortDir
+    ){
+        PageInfo<ProductWithImageAndCategory> products = this.productService.fetchByCategoryId(
+                categoryId,
+                pageNumber,
+                pageSize,
+                sortBy,
+                sortDir
+        );
+        return ResponseEntity.ok(products);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> update(
+            @PathVariable Long id,
+            @RequestBody UpdateProductRequest productRequest
+    ){
+        ProductDTO productDTO = this.productService.update(id,productRequest);
+        return ResponseEntity.ok(productDTO);
+    }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> fetchById(
@@ -91,6 +115,24 @@ public class ProductController {
         }
         List<ProductResponse> productResponseList = this.productService.findByIds(productIds);
         return ResponseEntity.status(HttpStatus.OK).body(productResponseList);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<?> search(
+            @RequestParam("keyword") String keyword,
+            @RequestParam(required = false, defaultValue = PageConstant.PAGE_NUMBER)Integer pageNumber,
+            @RequestParam(required = false,defaultValue = PageConstant.PAGE_SIZE)Integer pageSize,
+            @RequestParam(required = false,defaultValue = PageConstant.SORT_BY) String sortBy,
+            @RequestParam(required = false,defaultValue = PageConstant.SORT_DIR)String sortDir
+    ){
+        PageInfo<ProductWithImageAndCategory> pageInfo = this.productService.search(
+                keyword,
+                pageNumber,
+                pageSize,
+                sortBy,
+                sortDir
+        );
+        return ResponseEntity.ok(pageInfo);
     }
 
 

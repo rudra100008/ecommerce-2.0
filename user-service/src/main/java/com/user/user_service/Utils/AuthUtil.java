@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class AuthUtil {
-    private final UserRepository userRepository;
 
     @NotNull
     public static CustomUserPrincipal getCustomUserPrincipal() {

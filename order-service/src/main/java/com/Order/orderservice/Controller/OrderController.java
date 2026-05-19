@@ -25,16 +25,9 @@ public class OrderController {
     @PostMapping("/create")
     public ResponseEntity<?> create(
             @Valid @RequestBody OrderRequest orderRequest,
-            BindingResult result
+            @RequestHeader("X-User-Id") Long userId
     ){
-        if(result.hasErrors()){
-            List<ValidationErrorResponse> errorResponses = new ArrayList<>();
-            result.getFieldErrors().forEach(err ->{
-                errorResponses.add(new ValidationErrorResponse(err.getField(),err.getDefaultMessage()));
-            });
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ValidationErrors(errorResponses));
-        }
-        OrderResponse orderResponse = this.orderService.createOrder(orderRequest);
+        OrderResponse orderResponse = this.orderService.createOrder(userId,orderRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(orderResponse);
     }
 

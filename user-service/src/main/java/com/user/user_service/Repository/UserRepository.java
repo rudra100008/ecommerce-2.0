@@ -24,6 +24,7 @@ public interface UserRepository extends JpaRepository<User,Long> {
     @EntityGraph(attributePaths = {"addresses"})
     @Query("SELECT u FROM User u WHERE u.id = :userId")
     Optional<User> findByIdWithAddresses(@Param("userId") Long userId);
+
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
 }

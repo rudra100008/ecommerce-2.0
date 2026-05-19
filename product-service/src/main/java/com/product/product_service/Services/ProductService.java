@@ -16,6 +16,10 @@ public interface ProductService {
 
      PageInfo<ProductWithImageAndCategory> fetchAll(Integer pageNumber, Integer pageSize, String sortBy, String sortDir);
 
+     PageInfo<ProductWithImageAndCategory> fetchByCategoryId(Long categoryId,Integer pageNumber, Integer pageSize, String sortBy, String sortDir);
+
+     PageInfo<ProductWithImageAndCategory> search(String productName,Integer pageNumber, Integer pageSize, String sortBy, String sortDir);
+
      ProductDTO update(Long id, UpdateProductRequest updateRequest);
 
      ProductResponse findById(Long id);

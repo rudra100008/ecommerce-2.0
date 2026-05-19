@@ -67,7 +67,9 @@ public class SecurityConfig {
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
                         .logoutSuccessHandler(logoutSuccessHandler)
-                        .deleteCookies("token")
+                        .deleteCookies("accessToken", "refreshToken")
+                        .clearAuthentication(true)
+                        .invalidateHttpSession(true)
                         .permitAll())
                 .build();
     }

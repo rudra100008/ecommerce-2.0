@@ -49,15 +49,15 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     @RateLimiter(name = "createOrder",fallbackMethod = "createOrderRateLimiterFallback")
-    public OrderResponse createOrder(OrderRequest request) {
-        if (orderRepository.existsByUserIdAndStatus(request.userId(), OrderStatus.DRAFT)) {
+    public OrderResponse createOrder(Long userId, OrderRequest request) {
+        if (orderRepository.existsByUserIdAndStatus(userId, OrderStatus.DRAFT)) {
             throw new BusinessInvalidException(
                     "You already have a draft order. Please confirm or cancel it first."
             );
         }
 
         Order order = Order.builder()
-                .userId(request.userId())
+                .userId(userId)
                 .fullName(request.fullName())
                 .phoneNumber(request.phoneNumber())
                 .status(OrderStatus.DRAFT)
@@ -101,7 +101,7 @@ public class OrderServiceImpl implements OrderService {
         order.setShippingAddress(shippingAddress);
 
         Order saved = this.orderRepository.save(order);
-        log.info("Order created:{} for userId: {}", saved.getId(), request.userId());
+        log.info("Order created:{} for userId: {}", saved.getId(), userId);
 
 
         List<OrderItemResponse> orderItemResponses = this.orderItemMapper.toOrderItemResponses(saved.getOrderItems());
@@ -266,8 +266,8 @@ public class OrderServiceImpl implements OrderService {
 
     // =========== FALLBACK METHOD ==============
 
-    public OrderResponse createOrderRateLimiterFallback(OrderRequest request, RequestNotPermitted e){
-        log.warn("Rate limiter exceeded for createOrder.userId:{}",request.userId());
+    public OrderResponse createOrderRateLimiterFallback(Long userId, OrderRequest request, RequestNotPermitted e){
+        log.warn("Rate limiter exceeded for createOrder.userId:{}",userId);
 
         throw new RateLimitExceededException(
                 "Too many order requests.Please wait a moment and try again."

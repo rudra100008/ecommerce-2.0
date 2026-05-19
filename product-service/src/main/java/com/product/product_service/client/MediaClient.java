@@ -2,6 +2,7 @@ package com.product.product_service.client;
 
 import com.product.product_service.DTOs.Media.MediaDeleteRequest;
 import com.product.product_service.DTOs.Media.MediaUploadResponse;
+import com.product.product_service.fallback.MediaClientFallbackFactory;
 import com.shared_library.Config.FeignConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
@@ -10,7 +11,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-@FeignClient(name = "media-service",configuration = FeignConfig.class)
+@FeignClient(
+        name = "media-service",
+        configuration = FeignConfig.class,
+        fallbackFactory = MediaClientFallbackFactory.class
+)
 public interface MediaClient {
 
     @PostMapping(

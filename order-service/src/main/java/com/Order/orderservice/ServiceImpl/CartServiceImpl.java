@@ -82,7 +82,7 @@ public class CartServiceImpl implements CartService {
             CartItem item = existingItem.get();
 
             ReservationResponse reservationResponse = inventoryClient.updateReservationQuantity(new ReservationRequest(
-                    product.id(), userId, (long) request.quantity()));
+                    product.id(), (long) request.quantity()));
 
             item.setQuantity(reservationResponse.reservedQuantity().intValue());
             log.info("Updated quantity for productId: {} userId: {}",
@@ -92,7 +92,7 @@ public class CartServiceImpl implements CartService {
             //  new product — so add to cart and create a reservation
             ReservationResponse reservation = inventoryClient.createReservation(
                     new ReservationRequest(
-                            product.id(), userId, request.quantity().longValue()));
+                            product.id(), request.quantity().longValue()));
 
             CartItem newItem = CartItem.builder()
                     .productId(product.id())
@@ -187,7 +187,7 @@ public class CartServiceImpl implements CartService {
     // ============= FALLBACK METHOD ============
 
 
-    public CartResponse addToCartRateLimitFallback(
+    public CartResponse addToCartRateLimiterFallback(
             Long userId,
             CartItemRequest request,
             RequestNotPermitted e) {

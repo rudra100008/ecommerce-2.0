@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface OrderService {
-    OrderResponse createOrder(OrderRequest request);
+    OrderResponse createOrder(Long userId, OrderRequest request);
     OrderResponse getOrderById(Long orderId, Long userId);
     void cancelOrder(Long orderId, Long userId);
     PageInfo<OrderResponse> getOrdersByUserId(Long userId, Integer pageNumber, Integer pageSize);

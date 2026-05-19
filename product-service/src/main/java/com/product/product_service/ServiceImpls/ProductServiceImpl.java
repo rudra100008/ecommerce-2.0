@@ -23,6 +23,7 @@ import com.product.product_service.client.InventoryClient;
 import com.product.product_service.client.MediaClient;
 import com.shared_library.Exceptions.BusinessInvalidException;
 import com.shared_library.Exceptions.ResourceNotFoundException;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -96,7 +97,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public PageInfo<ProductWithImageAndCategory> fetchAll(Integer pageNumber, Integer pageSize, String sortBy, String sortDir) {
         String validateSortBy = ALLOWED_SORT_FIELDS.contains(sortBy) ? sortBy : PageConstant.SORT_BY;
         Sort sort = sortDir.equalsIgnoreCase(PageConstant.SORT_DIR) ?  Sort.by(validateSortBy).descending()
@@ -121,6 +122,94 @@ public class ProductServiceImpl implements ProductService {
                         new CategoryDTO(p.getCategory().getId(),p.getCategory().getName())
                 ))
                 .toList();
+        return new PageInfo<>(
+                products,
+                productPage.getNumber(),
+                productPage.getSize(),
+                productPage.getTotalElements(),
+                productPage.getTotalPages(),
+                productPage.isLast()
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageInfo<ProductWithImageAndCategory> fetchByCategoryId(Long categoryId, Integer pageNumber, Integer pageSize, String sortBy, String sortDir) {
+        String validateSortBy =  ALLOWED_SORT_FIELDS.contains(sortBy)
+                ? sortBy
+                : PageConstant.SORT_BY;
+
+        Sort sort = sortDir.equalsIgnoreCase(PageConstant.SORT_DIR)
+                ? Sort.by(validateSortBy).descending()
+                : Sort.by(validateSortBy).ascending();
+
+        Pageable pageable = PageRequest.of(pageNumber,pageSize,sort);
+
+         Page<Product> productPage = this.productRepository.findAllByCategoryId(categoryId,pageable);
+
+        List<Long> productIds =  productPage.getContent()
+                .stream()
+                .map(Product::getId)
+                .toList();
+
+        Map<Long,ProductImageDTO> imageDTOMap = this.productImageService.findPrimaryImages(productIds);
+
+        List<ProductWithImageAndCategory> products = productPage.getContent()
+                .stream()
+                .map(p -> productMapper.toProductWithImagesAndCategory(
+                        p,
+                        imageDTOMap.get(p.getId()),
+                        new CategoryDTO(p.getCategory().getId(),p.getCategory().getName())
+                ))
+                .toList();
+
+
+        return new PageInfo<>(
+                products,
+                productPage.getNumber(),
+                productPage.getSize(),
+                productPage.getTotalElements(),
+                productPage.getTotalPages(),
+                productPage.isLast()
+        );
+    }
+
+    @Override
+    @Transactional
+    public PageInfo<ProductWithImageAndCategory> search(String keyword, Integer pageNumber, Integer pageSize, String sortBy, String sortDir) {
+        String validateSortBy =  ALLOWED_SORT_FIELDS.contains(sortBy)
+                ? sortBy
+                : PageConstant.SORT_BY;
+
+        Sort sort = sortDir.equalsIgnoreCase(PageConstant.SORT_DIR)
+                ? Sort.by(validateSortBy).descending()
+                : Sort.by(validateSortBy).ascending();
+
+        Pageable pageable = PageRequest.of(pageNumber,pageSize,sort);
+        String cleanedKeyword = keyword == null ? "" : keyword.trim();
+
+        if (cleanedKeyword.isEmpty()) {
+            return fetchAll(pageNumber, pageSize, sortBy, sortDir);
+        }
+
+        Page<Product> productPage = this.productRepository.searchProduct(cleanedKeyword, pageable);
+        List<Long> productIds =  productPage.getContent()
+                .stream()
+                .map(Product::getId)
+                .toList();
+
+        Map<Long,ProductImageDTO> imageDTOMap = this.productImageService.findPrimaryImages(productIds);
+
+        List<ProductWithImageAndCategory> products = productPage.getContent()
+                .stream()
+                .map(p -> productMapper.toProductWithImagesAndCategory(
+                        p,
+                        imageDTOMap.get(p.getId()),
+                        new CategoryDTO(p.getCategory().getId(),p.getCategory().getName())
+                ))
+                .toList();
+
+
         return new PageInfo<>(
                 products,
                 productPage.getNumber(),

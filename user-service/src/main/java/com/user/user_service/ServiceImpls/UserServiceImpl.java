@@ -63,7 +63,7 @@ public class UserServiceImpl implements UserService {
         CustomUserPrincipal principal = AuthUtil.getCustomUserPrincipal();
         Long userId = principal.getId();
 
-        User user = this.userRepository.findById(userId)
+        User user = this.userRepository.findByIdWithAddresses(userId)
                 .orElseThrow(()-> new ResourceNotFoundException("User not found."));
         
         List<AddressResponse> addressResponseList = this.addressMapper.toAddressResponseList(user.getAddresses());
@@ -74,6 +74,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
+    @Transactional
     public UserResponse updateProfile(Long userId, UpdateUserRequest updateRequest) {
         Long loggedInUserId = AuthUtil.getCustomUserPrincipal().getId();
         validateUser(loggedInUserId,userId,null);
@@ -166,11 +167,13 @@ public class UserServiceImpl implements UserService {
         this.userRepository.save(user);
     }
     @Override
+    @Transactional(readOnly = true)
     public PageInfo<UserResponse> getAll(Integer pageNumber, Integer pageSize, String sortBy, String sortDir) {
         String validateSortBy = ALLOWED_SORT_FIELDS.contains(sortBy) ? sortBy : PageConstant.SORT_BY;
         Sort sort = sortDir.equalsIgnoreCase(PageConstant.SORT_DIR)
                 ? Sort.by(validateSortBy).descending()
                 : Sort.by(validateSortBy).ascending();
+
         Pageable pageable = PageRequest.of(pageNumber,pageSize,sort);
         Page<User> userPage = this.userRepository.findAllWithAddresses(pageable);
 
@@ -195,6 +198,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void deactivateUser(Long userId) {
         User  user = this.userRepository.findById(userId)
                 .orElseThrow(()-> new ResourceNotFoundException("User not found"));
@@ -207,6 +211,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void activateUser(Long userId) {
         User  user = this.userRepository.findById(userId)
                 .orElseThrow(()-> new ResourceNotFoundException("User not found"));
@@ -224,6 +229,8 @@ public class UserServiceImpl implements UserService {
         throw new UnsupportedOperationException("This service is not supported for now.");
     }
 
+
+    // ========== HELPER METHOD
     private void validateUser(Long authUserId,Long userId,String message){
         if(!authUserId.equals(userId)){
             throw new AccessDeniedException(message != null ? message : "User is not allowed to access this service.");
