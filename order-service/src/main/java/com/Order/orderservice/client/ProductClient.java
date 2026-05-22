@@ -18,9 +18,9 @@ import java.util.List;
 )
 public interface ProductClient {
 
-    @GetMapping("/api/product/{id}")
+    @GetMapping("/api/products/{id}")
     ProductResponse getById(@PathVariable Long id);
 
-    @GetMapping("/api/product/fetchAll")
+    @GetMapping("/api/products/fetchAll")
     List<ProductResponse> getByIds(@RequestParam("ids")List<Long> productIds);
 }

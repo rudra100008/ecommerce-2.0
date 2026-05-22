@@ -6,6 +6,7 @@ import com.shared_library.Utils.JwtUtils;
 import com.user.user_service.DTOs.AuthDTO.AuthResponse;
 import com.user.user_service.DTOs.AuthDTO.RegisterRequest;
 import com.user.user_service.DTOs.Media.MediaUploadResponse;
+import com.user.user_service.Entities.CustomUserPrincipal;
 import com.user.user_service.Entities.User;
 import com.user.user_service.Enums.AuthProvider;
 import com.user.user_service.Enums.RoleStatus;
@@ -73,7 +74,10 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public AuthResponse login(User user) {
+    public AuthResponse login(CustomUserPrincipal userPrincipal) {
+        User user = this.userRepository.findById(userPrincipal.getId())
+                .orElseThrow(()-> new ResourceNotFoundException("User not found."));
+
         if(user.getProvider() == AuthProvider.GOOGLE){
             throw new BusinessInvalidException(
                     "This account uses Google login. Please sign in with google"

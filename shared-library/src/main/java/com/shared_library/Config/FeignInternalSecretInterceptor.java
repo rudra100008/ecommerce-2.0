@@ -25,8 +25,8 @@ public class FeignInternalSecretInterceptor implements RequestInterceptor {
             String userEmail = request.getHeader("X-User-Email");
 
             if(userId != null) requestTemplate.header("X-User-Id",userId);
-            if(userRole != null) requestTemplate.header("X-User-Role");
-            if (userEmail != null) requestTemplate.header("X-User-Email");
+            if(userRole != null) requestTemplate.header("X-User-Role",userRole);
+            if (userEmail != null) requestTemplate.header("X-User-Email",userEmail);
         }
     }
 }

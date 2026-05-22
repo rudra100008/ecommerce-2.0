@@ -25,7 +25,8 @@ public class InternalSecretFilter extends OncePerRequestFilter {
             "/api/auth/login",
             "/api/auth/refresh",
             "/oauth2/",
-            "/login/oauth2/"
+            "/login/oauth2/",
+            "/api/products/fetchAll"
     );
 
     @Override

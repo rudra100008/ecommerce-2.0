@@ -10,7 +10,7 @@ import java.util.List;
 
 
 public record ProductDTO(
-        Long id,
+        Long productId,
         String name,
         String description,
         BigDecimal price,

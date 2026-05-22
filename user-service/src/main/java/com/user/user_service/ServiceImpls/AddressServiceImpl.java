@@ -5,7 +5,6 @@ import com.shared_library.Exceptions.ResourceNotFoundException;
 import com.user.user_service.DTOs.Address.AddressRequest;
 import com.user.user_service.DTOs.Address.AddressResponse;
 import com.user.user_service.DTOs.Address.UpdateAddressRequest;
-import com.user.user_service.DTOs.User.UserResponse;
 import com.user.user_service.Entities.Address;
 import com.user.user_service.Entities.User;
 import com.user.user_service.Mapper.AddressMapper;
@@ -28,7 +27,6 @@ import java.util.Objects;
 @Slf4j
 public class AddressServiceImpl implements AddressService {
     private final UserRepository userRepository;
-    private final UserMapper userMapper;
     private final AddressRepository addressRepository;
     private final AddressMapper addressMapper;
 
@@ -36,10 +34,10 @@ public class AddressServiceImpl implements AddressService {
     @Override
     @Transactional
     public AddressResponse add(Long userId, AddressRequest addressRequest) {
-        Long authUserId = AuthUtil.getCustomUserPrincipal().getId();
-        validateUser(authUserId,userId,"User is not allowed to add address.");
+        Long authUserId = Long.valueOf(AuthUtil.getCurrentUser().getUserId());
+
         User user = this.userRepository.findByIdWithAddresses(authUserId)
-                .orElseThrow(()-> new ResourceNotFoundException("User not found."));
+                .orElseThrow(()-> new ResourceNotFoundException("User not found "));
         if (user.getAddresses().size() >= 4) {
             throw new BusinessInvalidException("Maximum 4 addresses allowed per user.");
         }
@@ -67,11 +65,12 @@ public class AddressServiceImpl implements AddressService {
     @Override
     @Transactional
     public AddressResponse update(Long userId, UpdateAddressRequest addressRequest) {
-        Long authUserId = AuthUtil.getCustomUserPrincipal().getId();
+        Long authUserId = Long.valueOf(AuthUtil.getCurrentUser().getUserId());
         validateUser(authUserId,userId,"User is not allowed to add address.");
 
         Address existingAddress = this.addressRepository.findById(addressRequest.addressId())
                 .orElseThrow(()-> new ResourceNotFoundException("Address not found"));
+
         if (!Objects.equals(existingAddress.getUser().getId(), authUserId)) {
             throw new AccessDeniedException("Address does not belong to this user.");
         }
@@ -102,7 +101,7 @@ public class AddressServiceImpl implements AddressService {
     @Override
     @Transactional
     public void delete(Long userId, Long addressId) {
-        Long authUserId = AuthUtil.getCustomUserPrincipal().getId();
+        Long authUserId = Long.valueOf(AuthUtil.getCurrentUser().getUserId());
         validateUser(authUserId, userId, "Not allowed to delete this address.");
 
         Address address = this.addressRepository.findById(addressId)

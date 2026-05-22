@@ -1,5 +1,7 @@
 package com.user.user_service.Config;
 
+import com.shared_library.Security.GatewayAuthenticationFilter;
+import com.shared_library.Security.InternalSecretFilter;
 import com.user.user_service.SecurityConfig.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -15,6 +17,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -30,6 +33,8 @@ public class SecurityConfig {
     private final OAuth2FailureHandler oAuth2FailureHandler;
     private final AuthExceptionHandler authExceptionHandler;
     private final CustomLogoutSuccessHandler logoutSuccessHandler;
+    private final InternalSecretFilter internalSecretFilter;
+    private final GatewayAuthenticationFilter gatewayAuthenticationFilter;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration){
@@ -43,9 +48,10 @@ public class SecurityConfig {
         return dao;
     }
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http){
+    public SecurityFilterChain securityFilterChain(HttpSecurity http)throws Exception{
         return http
                 .csrf(AbstractHttpConfigurer::disable)
+//                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .authorizeHttpRequests(auth -> auth
@@ -55,6 +61,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
+                .addFilterBefore(internalSecretFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(gatewayAuthenticationFilter,UsernamePasswordAuthenticationFilter.class)
                 .authenticationProvider(authenticationProvider())
                 .exceptionHandling(ex -> ex
                         .accessDeniedHandler(authExceptionHandler)
@@ -73,19 +81,19 @@ public class SecurityConfig {
                         .permitAll())
                 .build();
     }
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource(){
-        CorsConfiguration cors = new CorsConfiguration();
-        cors.setAllowedOrigins(List.of("http://localhost:3000"));
-        cors.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
-        cors.setAllowedHeaders(List.of("Authorization","Content-Type","Accept"));
-        cors.setExposedHeaders(List.of("Set-Cookie","Authorization","X-XSRF-TOKEN"));
-        cors.setAllowCredentials(true); // for cookies
-
-        UrlBasedCorsConfigurationSource url  = new UrlBasedCorsConfigurationSource();
-        url.registerCorsConfiguration("/**",cors);
-        return url;
-    }
+//    @Bean
+//    public CorsConfigurationSource corsConfigurationSource(){
+//        CorsConfiguration cors = new CorsConfiguration();
+//        cors.setAllowedOrigins(List.of("http://localhost:3000"));
+//        cors.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
+//        cors.setAllowedHeaders(List.of("Authorization","Content-Type","Accept"));
+//        cors.setExposedHeaders(List.of("Set-Cookie","Authorization","X-XSRF-TOKEN"));
+//        cors.setAllowCredentials(true); // for cookies
+//
+//        UrlBasedCorsConfigurationSource url  = new UrlBasedCorsConfigurationSource();
+//        url.registerCorsConfiguration("/**",cors);
+//        return url;
+//    }
 
     @Bean
     public PasswordEncoder passwordEncoder(){

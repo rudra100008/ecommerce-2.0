@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 
 public record ProductWithImageAndCategory(
-        Long id,
+        Long productId,
         String name,
         String description,
         BigDecimal price,

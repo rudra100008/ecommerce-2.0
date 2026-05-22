@@ -1,13 +1,8 @@
 package com.gateway.ApiGateway;
 
-import com.shared_library.Config.FeignInternalSecretInterceptor;
-import com.shared_library.Exceptions.GlobalException;
-import com.shared_library.Exceptions.SecurityExceptionHandler;
-import com.shared_library.Security.InternalSecretFilter;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.FilterType;
 
 @SpringBootApplication
 @ComponentScan(

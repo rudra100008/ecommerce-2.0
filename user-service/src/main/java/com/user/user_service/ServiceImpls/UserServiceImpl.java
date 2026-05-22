@@ -3,6 +3,7 @@ package com.user.user_service.ServiceImpls;
 import com.shared_library.Exceptions.BusinessInvalidException;
 import com.shared_library.Exceptions.ImageInvalidException;
 import com.shared_library.Exceptions.ResourceNotFoundException;
+import com.shared_library.Security.AuthenticatedUser;
 import com.user.user_service.Constants.PageConstant;
 import com.user.user_service.DTOs.Address.AddressResponse;
 import com.user.user_service.DTOs.Media.MediaDeleteRequest;
@@ -46,7 +47,6 @@ import java.util.Objects;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-    private final AddressRepository addressRepository;
     private final AddressMapper addressMapper;
     private final MediaClient mediaClient;
     private final PasswordEncoder passwordEncoder;
@@ -60,12 +60,10 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public UserResponse fetchCurrentUser() {
-        CustomUserPrincipal principal = AuthUtil.getCustomUserPrincipal();
-        Long userId = principal.getId();
+        Long authUserId = Long.valueOf(AuthUtil.getCurrentUser().getUserId());
 
-        User user = this.userRepository.findByIdWithAddresses(userId)
-                .orElseThrow(()-> new ResourceNotFoundException("User not found."));
-        
+        User user = this.userRepository.findByIdWithAddresses(authUserId)
+                .orElseThrow(()-> new ResourceNotFoundException("User not found "));
         List<AddressResponse> addressResponseList = this.addressMapper.toAddressResponseList(user.getAddresses());
         
         return this.userMapper.toResponse(user,addressResponseList);
@@ -76,7 +74,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserResponse updateProfile(Long userId, UpdateUserRequest updateRequest) {
-        Long loggedInUserId = AuthUtil.getCustomUserPrincipal().getId();
+        Long loggedInUserId = Long.valueOf(AuthUtil.getCurrentUser().getUserId());
         validateUser(loggedInUserId,userId,null);
         User user = this.userRepository.findById(loggedInUserId)
                 .orElseThrow(()-> new ResourceNotFoundException("User not found."));
@@ -99,7 +97,8 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserResponse updateProfilePic(Long userId, MultipartFile imageFile) {
-        Long authUserId = AuthUtil.getCustomUserPrincipal().getId();
+        Long authUserId = Long.valueOf(AuthUtil.getCurrentUser().getUserId());
+
         validateUser(authUserId,userId,"User is not allowed to update profile pic.");
         User  user = this.userRepository.findById(authUserId)
                 .orElseThrow(()-> new ResourceNotFoundException("User not found"));
@@ -123,7 +122,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void removeProfilePic(Long userId) {
-        Long authUserId = AuthUtil.getCustomUserPrincipal().getId();
+        Long authUserId = Long.valueOf(AuthUtil.getCurrentUser().getUserId());
         validateUser(authUserId, userId, null);
 
         User user = this.userRepository.findById(authUserId)
@@ -142,7 +141,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void changePassword(Long userId, ChangePasswordRequest request) {
-        Long authUserId = AuthUtil.getCustomUserPrincipal().getId();
+        Long authUserId = Long.valueOf(AuthUtil.getCurrentUser().getUserId());
         validateUser(authUserId, userId, null);
 
         User user = this.userRepository.findById(authUserId)

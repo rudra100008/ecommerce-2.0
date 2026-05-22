@@ -1,7 +1,10 @@
 package com.user.user_service.Utils;
 
 import com.shared_library.Exceptions.BusinessInvalidException;
+import com.shared_library.Exceptions.ResourceNotFoundException;
+import com.shared_library.Security.AuthenticatedUser;
 import com.user.user_service.Entities.CustomUserPrincipal;
+import com.user.user_service.Entities.User;
 import com.user.user_service.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
@@ -11,23 +14,17 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-@Component
-@RequiredArgsConstructor
+import java.util.Objects;
+
 public class AuthUtil {
 
     @NotNull
-    public static CustomUserPrincipal getCustomUserPrincipal() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if(authentication == null || !authentication.isAuthenticated() ||
-                authentication instanceof AnonymousAuthenticationToken){
+    public static  AuthenticatedUser getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() ||
+                auth instanceof AnonymousAuthenticationToken) {
             throw new AccessDeniedException("Not authenticated");
         }
-
-        CustomUserPrincipal principal =
-                (CustomUserPrincipal) authentication.getPrincipal();
-        if (principal == null) {
-            throw new BusinessInvalidException("User is not authenticated");
-        }
-        return principal;
+        return (AuthenticatedUser) Objects.requireNonNull(auth.getPrincipal());
     }
 }

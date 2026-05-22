@@ -35,12 +35,13 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
     private static final List<String> PUBLIC_PATHS = List.of(
             "/api/auth/**",
             "/oauth2/**",
-            "/login/oauth2/**"
+            "/login/oauth2/**",
+            "/api/products/fetchAll"
     );
 
     private static final List<String> ADMIN_PATHS = List.of(
             "/api/admin/**",
-            "/api/product/admin/**"
+            "/api/products/admin/**"
     );
 
     private static final List<String> ADMIN_ROLES = List.of(

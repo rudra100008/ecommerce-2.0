@@ -1,5 +1,6 @@
 package com.product.product_service.config;
 
+import com.shared_library.Security.GatewayAuthenticationFilter;
 import com.shared_library.Security.InternalSecretFilter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final InternalSecretFilter internalSecretFilter;
+    private final GatewayAuthenticationFilter gatewayAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -28,6 +30,7 @@ public class SecurityConfig {
                         auth.anyRequest().permitAll()
                 )
                 .addFilterBefore(internalSecretFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(gatewayAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 }

@@ -18,11 +18,11 @@ import java.util.List;
 )
 public interface ProductClient {
 
-    @GetMapping(ApiConstants.API_PRODUCT_BY_PRODUCT_ID)
+    @GetMapping("/api/products/{productId}")
     ProductResponse getProductById(@PathVariable Long productId);
 
 
-    @GetMapping("/api/product/fetchAll")
+    @GetMapping("/api/products")
     List<ProductResponse> getAllProducts(
             @RequestParam(required = false, defaultValue = PageConstant.PAGE_NUMBER)Integer pageNumber,
             @RequestParam(required = false,defaultValue = PageConstant.PAGE_SIZE)Integer pageSize,

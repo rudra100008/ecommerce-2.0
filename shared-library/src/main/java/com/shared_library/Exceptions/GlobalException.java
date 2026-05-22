@@ -177,6 +177,23 @@ public class GlobalException {
                 request
         );
     }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<?> handleBadCredentials(BadCredentialsException e, WebRequest request) {
+        return errorResponse(
+                HttpStatus.UNAUTHORIZED,
+                "Invalid email or password",
+                request
+        );
+    }
+
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<?> handleUsernameNotFound(UsernameNotFoundException e, WebRequest request) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiErrorResponse(
+                LocalDateTime.now(), 404, "Not Found", "Email not found",
+                request.getDescription(false)
+        ));
+    }
 //    // GlobalExceptionHandler
 //    @ExceptionHandler(DataIntegrityViolationException.class)
 //    public ResponseEntity<?> handleDataIntegrity(DataIntegrityViolation e,WebRequest request) {
