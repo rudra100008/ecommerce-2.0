@@ -17,7 +17,6 @@ import java.util.Map;
 public class AdminController {
     private final UserService userService;
 
-
     @GetMapping()
     public ResponseEntity<?> getAll(
             @RequestParam(required = false, defaultValue = PageConstant.PAGE_NUMBER)Integer pageNumber,

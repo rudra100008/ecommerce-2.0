@@ -1,6 +1,7 @@
 package com.user.user_service.Repository;
 
 import com.user.user_service.Entities.User;
+import com.user.user_service.Enums.RoleStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -27,4 +28,5 @@ public interface UserRepository extends JpaRepository<User,Long> {
 
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
+    boolean existsByRole(RoleStatus role);
 }
