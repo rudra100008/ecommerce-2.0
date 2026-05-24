@@ -28,19 +28,17 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
-    private final MediaClient mediaClient;
 
 
     @Override
     @Transactional
-    public AuthResponse register(RegisterRequest request, MultipartFile imageFile) {
+    public AuthResponse register(RegisterRequest request) {
         if(userRepository.existsByEmail(request.email())){
             throw new BusinessInvalidException("Email already registered.");
         }
         if(userRepository.existsByUsername(request.username())){
             throw  new BusinessInvalidException("Username already taken.");
         }
-        MediaUploadResponse uploadResponse = upload(imageFile);
 
         User user = User.builder()
                 .fullName(request.fullName())
@@ -50,9 +48,7 @@ public class AuthServiceImpl implements AuthService {
                 .role(RoleStatus.ROLE_CUSTOMER)
                 .active(true)
                 .provider(AuthProvider.LOCAL)
-                .imageCustomized(true)
-                .publicId(uploadResponse.publicId())
-                .imageUrl(uploadResponse.imageUrl())
+                .imageCustomized(false)
                 .build();
         User saved = this.userRepository.save(user);
 
@@ -128,7 +124,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
 
-    private MediaUploadResponse upload(MultipartFile file){
+/*    private MediaUploadResponse upload(MultipartFile file){
             return  this.mediaClient.uploadImage(file,"user");
-    }
+    }*/
 }

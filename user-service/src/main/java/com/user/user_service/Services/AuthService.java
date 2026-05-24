@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface AuthService {
-    AuthResponse register(RegisterRequest request, MultipartFile imageFile);
+    AuthResponse register(RegisterRequest request);
 
     AuthResponse login(CustomUserPrincipal userPrincipal);
 

@@ -27,13 +27,12 @@ public class AuthController {
     private final AuthService authService;
     private final AuthenticationManager authenticationManager;
 
-    @PostMapping(value = "/register",consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PostMapping(value = "/register")
     public ResponseEntity<?> register(
             HttpServletResponse response,
-            @RequestPart("user") RegisterRequest registerRequest,
-            @RequestPart("image") MultipartFile imageFile
+            @RequestBody RegisterRequest registerRequest
     ){
-        AuthResponse authResponse = this.authService.register(registerRequest,imageFile);
+        AuthResponse authResponse = this.authService.register(registerRequest);
 
         addAuthCookies(response,authResponse);
         return ResponseEntity.status(HttpStatus.CREATED).body(authResponse);
