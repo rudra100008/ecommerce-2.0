@@ -175,6 +175,52 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public PageInfo<ProductAdminResponse> fetchAllWithDetails(Integer pageNumber, Integer pageSize, String sortBy, String sortDir) {
+        String validateSortBy =  ALLOWED_SORT_FIELDS.contains(sortBy)
+                ? sortBy
+                : PageConstant.SORT_BY;
+
+        Sort sort = sortDir.equalsIgnoreCase(PageConstant.SORT_DIR)
+                ? Sort.by(validateSortBy).descending()
+                : Sort.by(validateSortBy).ascending();
+
+        Pageable pageable = PageRequest.of(pageNumber,pageSize,sort);
+
+         Page<Product> productPage = this.productRepository.findAllWithCategory(pageable);
+
+        var productIds =  productPage.getContent()
+                .stream()
+                .map(Product::getId)
+                .toList();
+
+        Map<Long,ProductImageDTO> imageDTOMap = this.productImageService.findPrimaryImages(productIds);
+
+        List<InventoryDTO> inventoryDTOS = this.inventoryClient.findAllByProductIds(productIds);
+        Map<Long,InventoryDTO>  inventoryDTOMap = inventoryDTOS.stream()
+                .collect(Collectors.toMap(
+                        InventoryDTO::productId, i->i
+                ));
+        List<ProductAdminResponse> products = productPage.getContent()
+                .stream()
+                .map(p -> this.productMapper.toProductAdminResponse(
+                        p,
+                        imageDTOMap.get(p.getId()),
+                        new CategoryDTO(p.getCategory().getId(),p.getCategory().getName()),
+                        inventoryDTOMap.get(p.getId())
+
+                )).toList();
+        return new PageInfo<>(
+                products,
+                productPage.getNumber(),
+                productPage.getSize(),
+                productPage.getTotalElements(),
+                productPage.getTotalPages(),
+                productPage.isLast()
+        );
+    }
+
+    @Override
     @Transactional
     public PageInfo<ProductWithImageAndCategory> search(String keyword, Integer pageNumber, Integer pageSize, String sortBy, String sortDir) {
         String validateSortBy =  ALLOWED_SORT_FIELDS.contains(sortBy)
@@ -237,7 +283,6 @@ public class ProductServiceImpl implements ProductService {
         );
         InventoryDTO inventoryDTO = this.inventoryClient.fetchInventoryByProductId(saved.getId());
         List<ProductImageDTO> imageDTOS = this.productImageMapper.toProductImageDTOs(saved.getImages());
-
 
         return this.productMapper.toProductDTO(
                 saved,

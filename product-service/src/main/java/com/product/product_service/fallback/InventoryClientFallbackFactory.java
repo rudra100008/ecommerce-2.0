@@ -9,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.openfeign.FallbackFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 @Slf4j
 public class InventoryClientFallbackFactory implements FallbackFactory<InventoryClient> {
@@ -31,6 +33,12 @@ public class InventoryClientFallbackFactory implements FallbackFactory<Inventory
             @Override
             public void deleteByProductId(Long productId) {
                 log.error("Failed to delete inventory by productId.Cause: {}",cause.getMessage());
+            }
+
+            @Override
+            public List<InventoryDTO> findAllByProductIds(List<Long> productIds) {
+                log.error("Failed to fetch inventories by productIds. Cause: {}",cause.getMessage());
+                return List.of();
             }
         };
     }

@@ -19,11 +19,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         basePackages = {
                 "com.inventory_service",
                 "com.shared_library"
-        },
-        excludeFilters = @ComponentScan.Filter(
-                type = FilterType.ASSIGNABLE_TYPE,
-                classes = {SecurityExceptionHandler.class }
-        )
+        }
 )
 @EnableFeignClients(basePackages = {
         "com.inventory_service"

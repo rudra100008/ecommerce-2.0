@@ -31,6 +31,15 @@ public class InventoryController {
         return this.inventoryService.fetchAll();
     }
 
+    @PostMapping("/products")
+    public ResponseEntity<?> fetchAllByProductId(
+            @RequestBody List<Long> productIds
+    ){
+        List<InventoryResponse> inventoryResponseList = this.inventoryService.fetchAllByProductId(productIds);
+        return ResponseEntity.ok(inventoryResponseList);
+    }
+
+
     @GetMapping("/{id}")
     public InventoryResponse fetchById(
             @PathVariable("id")Long id

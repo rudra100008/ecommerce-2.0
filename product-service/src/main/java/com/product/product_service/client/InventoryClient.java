@@ -8,6 +8,8 @@ import com.shared_library.Config.FeignConfig;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @FeignClient(
         name = "inventory-service",
         configuration = FeignConfig.class,
@@ -24,4 +26,7 @@ public interface InventoryClient {
 
     @DeleteMapping(ApiConstants.API_INVENTORY + "/product/{productId}")
     void deleteByProductId(@PathVariable Long productId);
+
+    @PostMapping(ApiConstants.API_INVENTORY + "/products")
+    List<InventoryDTO> findAllByProductIds(@RequestBody List<Long> productIds);
 }

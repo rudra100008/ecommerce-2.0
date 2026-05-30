@@ -23,7 +23,7 @@ public interface InventoryMapper {
     InventoryResponse toInventoryResponse(Inventory inventory);
 
 
-    default List<InventoryResponse> toInventoryResponses(List<Inventory> inventories){
+    default List<InventoryResponse> toInventoryResponsList(List<Inventory> inventories){
         if(inventories == null){
             return  new ArrayList<>();
         }

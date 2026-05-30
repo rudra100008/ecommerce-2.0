@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,16 @@ public class InventoryServiceImpl implements InventoryService {
     @Transactional(readOnly = true)
     public List<InventoryResponse> fetchAll() {
         List<Inventory>  inventories = this.inventoryRepository.findAll();
-        return this.inventoryMapper.toInventoryResponses(inventories);
+        return this.inventoryMapper.toInventoryResponsList(inventories);
+    }
+
+    @Override
+    public List<InventoryResponse> fetchAllByProductId(List<Long> productIds) {
+        List<Inventory> inventories = this.inventoryRepository.findAllByProductIds(productIds);
+        if(!Objects.equals(inventories.size(),productIds.size())){
+            throw new ResourceNotFoundException("Inventories not found when fetching by productIds");
+        }
+        return this.inventoryMapper.toInventoryResponsList(inventories);
     }
 
     @Override

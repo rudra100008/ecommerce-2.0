@@ -14,11 +14,7 @@ import org.springframework.context.annotation.FilterType;
         basePackages = {
                 "com.Order.orderservice",
                 "com.shared_library"
-        },
-        excludeFilters = @ComponentScan.Filter(
-                type = FilterType.ASSIGNABLE_TYPE,
-                classes = {SecurityExceptionHandler.class }
-        )
+        }
 )
 @EnableFeignClients
 public class OrderServiceApplication {

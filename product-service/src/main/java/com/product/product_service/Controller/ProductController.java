@@ -34,7 +34,7 @@ public class ProductController {
     }
 
 
-    // this fetch product with a primary image and categoryD
+    // this fetch product with a primary image and category
     @GetMapping("/fetchAll")
     public ResponseEntity<?> fetchAll(
             @RequestParam(required = false, defaultValue = PageConstant.PAGE_NUMBER)Integer pageNumber,
@@ -51,6 +51,21 @@ public class ProductController {
                 sortDir
         );
         return  ResponseEntity.status(HttpStatus.OK).body(products);
+    }
+
+    // for this give all product data with on primary image,category,inventory
+    @GetMapping("/fetchAllWithInventoryAndImageAndCategory")
+    public ResponseEntity<?> fetchAllWithInventoryAndImageAndCategory(
+            @RequestParam(required = false, defaultValue = PageConstant.PAGE_NUMBER)Integer pageNumber,
+            @RequestParam(required = false,defaultValue = PageConstant.PAGE_SIZE)Integer pageSize,
+            @RequestParam(required = false,defaultValue = PageConstant.SORT_BY) String sortBy,
+            @RequestParam(required = false,defaultValue = PageConstant.SORT_DIR)String sortDir
+    ){
+        PageInfo<ProductAdminResponse> responsePageInfo = this.productService.fetchAllWithDetails(
+                pageNumber,pageSize,
+                sortBy,sortDir
+        );
+        return ResponseEntity.ok(responsePageInfo);
     }
 
     @GetMapping("/category/{categoryId}")

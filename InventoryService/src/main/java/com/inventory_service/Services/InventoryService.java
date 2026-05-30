@@ -18,6 +18,7 @@ public interface InventoryService {
     InventoryResponse fetchByProductId(Long productId);
 
     List<InventoryResponse> fetchAll();
+    List<InventoryResponse> fetchAllByProductId(List<Long> productIds);
 
     void deleteById(Long id);
     void deleteByProductId(Long productId);

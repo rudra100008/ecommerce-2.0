@@ -30,6 +30,10 @@ public interface InventoryRepository extends JpaRepository<Inventory,Long> {
             """)
     Optional<Inventory> findByProductIdWithLock(@Param("productId")Long productId);
 
+    @Query("""
+            SELECT i FROM Inventory i WHERE i.productId IN :productIds
+            """)
+    List<Inventory> findAllByProductIds(@Param("productIds")List<Long> productIds);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
