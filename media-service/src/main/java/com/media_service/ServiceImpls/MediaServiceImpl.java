@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -68,6 +69,18 @@ public class MediaServiceImpl implements MediaService {
         } catch (IOException e) {
             log.error("Failed to delete image: {}", e.getMessage());
             throw new MediaUploadException("Image delete failed: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void deleteMultiImage(List<String> publicIds) {
+
+        if (publicIds == null || publicIds.isEmpty()) {
+            return;
+        }
+
+        for (String publicId : publicIds) {
+            deleteImage(publicId);
         }
     }
 

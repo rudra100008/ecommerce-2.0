@@ -47,4 +47,12 @@ public class MediaController {
         mediaService.deleteImage(request.publicId());
         return ResponseEntity.noContent().build();
     }
+     @DeleteMapping("/delete/multiple")
+    public ResponseEntity<?>  deleteMultiple(
+            @Valid @RequestBody List<MediaDeleteRequest> requests){
+        List<String> publicIds = requests.stream().map(MediaDeleteRequest::publicId).toList();
+        mediaService.deleteMultiImage(publicIds);
+         return ResponseEntity.noContent().build();
+     }
+
 }

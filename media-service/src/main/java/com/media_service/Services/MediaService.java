@@ -11,6 +11,9 @@ public interface MediaService {
     MediaUploadResponse uploadImage(MultipartFile imageFile,String folder);
 
     void deleteImage(String publicId);
+    void deleteMultiImage(List<String> publicId);
 
     List<MediaUploadResponse> uploadMultipleImage(List<MultipartFile> imageFiles,String folder);
+
+
 }
