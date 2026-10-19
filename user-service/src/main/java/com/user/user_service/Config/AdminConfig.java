@@ -1,15 +1,17 @@
 package com.user.user_service.Config;
 
-import com.user.user_service.Entities.User;
-import com.user.user_service.Enums.AuthProvider;
-import com.user.user_service.Enums.RoleStatus;
-import com.user.user_service.Repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+
+import com.user.user_service.Entities.User;
+import com.user.user_service.Enums.AuthProvider;
+import com.user.user_service.Enums.RoleStatus;
+import com.user.user_service.Repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor

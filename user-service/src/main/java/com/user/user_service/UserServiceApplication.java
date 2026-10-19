@@ -14,6 +14,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 public class UserServiceApplication {
 
 	public static void main(String[] args) {
+		System.out.println("INTERNAL SECRET KEY exitst:" + (System.getenv("INTERNAL_SECRET_KEY") != null));
 		SpringApplication.run(UserServiceApplication.class, args);
 	}
 
